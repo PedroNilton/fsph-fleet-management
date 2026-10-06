@@ -1,10 +1,6 @@
 # Rotina para rodar localmente (deve ser feito via CLI)
 
-```
-cd ~/Documents/ws-personal/gestao-frotas
-```
-
-# Banco
+No diretório em que você clonar o projeto, rode o seguinte comando: 
 
 ```
 docker compose up -d postgres
