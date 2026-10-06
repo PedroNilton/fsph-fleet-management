@@ -7,8 +7,7 @@ docker compose up -d postgres
 docker compose ps
 ```
 
-# Backend
-
+Logo após:
 ```
 cd backend
 ./mvnw spring-boot:run
