@@ -21,6 +21,7 @@ public class CustomUserDetailsService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String email) {
         String normalizedEmail = email.trim().toLowerCase(Locale.ROOT);
+
         User user = userRepository.findByEmailIgnoreCaseAndActiveTrue(normalizedEmail)
                 .orElseThrow(() -> new UsernameNotFoundException("Credenciais inválidas"));
 

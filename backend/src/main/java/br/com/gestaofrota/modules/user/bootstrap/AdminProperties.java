@@ -1,4 +1,4 @@
-package br.com.gestaofrota.modules.bootstrap;
+package br.com.gestaofrota.modules.user.bootstrap;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;

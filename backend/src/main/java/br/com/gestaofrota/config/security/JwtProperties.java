@@ -10,11 +10,7 @@ import java.time.Duration;
 
 @Validated
 @ConfigurationProperties(prefix = "app.jwt")
-public record JwtProperties(
-        @NotBlank @Size(min = 32) String secret,
-        @NotNull Duration expiration,
-        @NotBlank String issuer
-) {
+public record JwtProperties(@NotBlank @Size(min = 32) String secret, @NotNull Duration expiration, @NotBlank String issuer) {
     public JwtProperties {
         if (expiration != null && (expiration.isZero() || expiration.isNegative())) {
             throw new IllegalArgumentException("A expiração do JWT deve ser positiva");

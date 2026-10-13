@@ -20,9 +20,7 @@ public class JwtService {
     public JwtService(JwtProperties properties) {
         this.properties = properties;
         this.algorithm = Algorithm.HMAC256(properties.secret());
-        this.verifier = JWT.require(algorithm)
-                .withIssuer(properties.issuer())
-                .build();
+        this.verifier = JWT.require(algorithm).withIssuer(properties.issuer()).build();
     }
 
     public String generateToken(UserDetails user) {

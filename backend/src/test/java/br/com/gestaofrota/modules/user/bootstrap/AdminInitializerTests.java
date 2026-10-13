@@ -4,8 +4,6 @@ import br.com.gestaofrota.modules.sector.infra.entity.Sector;
 import br.com.gestaofrota.modules.sector.infra.repository.SectorRepository;
 import br.com.gestaofrota.modules.user.domain.UserRole;
 import br.com.gestaofrota.modules.user.infra.entity.User;
-import br.com.gestaofrota.modules.bootstrap.AdminInitializer;
-import br.com.gestaofrota.modules.bootstrap.AdminProperties;
 import br.com.gestaofrota.modules.user.infra.repository.UserRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

@@ -1,4 +1,4 @@
-package br.com.gestaofrota.modules.bootstrap;
+package br.com.gestaofrota.modules.user.bootstrap;
 
 import br.com.gestaofrota.modules.sector.infra.entity.Sector;
 import br.com.gestaofrota.modules.sector.infra.repository.SectorRepository;

@@ -55,16 +55,18 @@ POSTGRES_DB=gestao_frotas
 POSTGRES_USER=gestao_frotas
 POSTGRES_PASSWORD=sua_senha
 POSTGRES_PORT=5432
+
 ADMIN_NAME=Administrador
 ADMIN_EMAIL=admin@exemplo.com
-ADMIN_PASSWORD=uma_senha_forte
+ADMIN_PASSWORD=admin_senha
 ADMIN_SECTOR_NAME=Administrativo
-JWT_SECRET=troque-por-um-segredo-aleatorio-com-pelo-menos-32-caracteres
+
+JWT_SECRET=
 JWT_EXPIRATION=PT1H
 JWT_ISSUER=gestao-frotas
 ```
 
-Altere as senhas de exemplo e gere um segredo JWT aleatório para o ambiente local.
+Altere as senhas de exemplo e gere um JWT secret aleatório para o ambiente local.
 
 Na primeira inicialização, o backend cria o administrador configurado acima e o
 setor `Administrativo`, caso ainda não existam. Opcionalmente, personalize o nome
@@ -82,7 +84,7 @@ Content-Type: application/json
 
 {
   "email": "admin@exemplo.com",
-  "password": "uma_senha_forte"
+  "password": "admin_senha"
 }
 ```
 
