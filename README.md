@@ -55,11 +55,45 @@ POSTGRES_DB=gestao_frotas
 POSTGRES_USER=gestao_frotas
 POSTGRES_PASSWORD=sua_senha
 POSTGRES_PORT=5432
+ADMIN_NAME=Administrador
+ADMIN_EMAIL=admin@exemplo.com
+ADMIN_PASSWORD=uma_senha_forte
+ADMIN_SECTOR_NAME=Administrativo
+JWT_SECRET=troque-por-um-segredo-aleatorio-com-pelo-menos-32-caracteres
+JWT_EXPIRATION=PT1H
+JWT_ISSUER=gestao-frotas
 ```
 
-Altere `sua_senha` para uma senha local.
+Altere as senhas de exemplo e gere um segredo JWT aleatório para o ambiente local.
+
+Na primeira inicialização, o backend cria o administrador configurado acima e o
+setor `Administrativo`, caso ainda não existam. Opcionalmente, personalize o nome
+do setor com `ADMIN_SECTOR_NAME`. Inicializações posteriores não duplicam o usuário.
 
 > O arquivo `.env` contém informações locais e não deve ser enviado ao Git.
+
+## Autenticação
+
+Envie as credenciais do administrador para obter um token:
+
+```http
+POST /api/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@exemplo.com",
+  "password": "uma_senha_forte"
+}
+```
+
+Nas rotas protegidas, envie o token retornado no cabeçalho:
+
+```http
+Authorization: Bearer <token>
+```
+
+Somente o login e o health check são públicos. As demais rotas exigem um JWT
+válido.
 
 ## 3. Iniciar o PostgreSQL
 
