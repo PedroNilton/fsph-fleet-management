@@ -159,7 +159,7 @@ Na primeira execução, o Maven Wrapper baixará as dependências do projeto. Is
 A aplicação estará pronta quando o terminal apresentar uma mensagem semelhante a:
 
 ```text
-Started GestaoFrotaBackendApplication
+Started GestaoFrotaApplication
 ```
 
 Por padrão, o backend será iniciado em:
