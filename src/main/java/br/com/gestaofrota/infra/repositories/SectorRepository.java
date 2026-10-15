@@ -7,4 +7,8 @@ import java.util.UUID;
 
 public interface SectorRepository extends JpaRepository<Sector, UUID> {
     Optional<Sector> findByNameIgnoreCase(String name);
+
+    boolean existsByNameIgnoreCase(String name);
+
+    boolean existsByNameIgnoreCaseAndIdNot(String name, UUID id);
 }

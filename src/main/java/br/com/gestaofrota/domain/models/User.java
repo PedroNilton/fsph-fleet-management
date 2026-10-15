@@ -71,4 +71,20 @@ public class User {
     public boolean isActive() {
         return active;
     }
+
+    public void update(Sector sector, String name, String email, UserRole role, boolean active) {
+        this.sector = sector;
+        this.name = name;
+        this.email = email;
+        this.role = role;
+        this.active = active;
+    }
+
+    public void changePassword(String password) {
+        this.password = password;
+    }
+
+    public void deactivate() {
+        this.active = false;
+    }
 }

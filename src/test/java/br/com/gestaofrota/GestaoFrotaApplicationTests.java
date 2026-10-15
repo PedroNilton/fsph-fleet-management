@@ -3,6 +3,8 @@ package br.com.gestaofrota;
 import br.com.gestaofrota.infra.security.services.CustomUserDetailsService;
 import br.com.gestaofrota.infra.startup.AdminInitializer;
 import br.com.gestaofrota.infra.startup.AdminProperties;
+import br.com.gestaofrota.application.services.SectorService;
+import br.com.gestaofrota.application.services.UserService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -20,6 +22,12 @@ class GestaoFrotaApplicationTests {
 
 	@MockitoBean
 	private CustomUserDetailsService customUserDetailsService;
+
+	@MockitoBean
+	private SectorService sectorService;
+
+	@MockitoBean
+	private UserService userService;
 
 	@Autowired
 	private AdminProperties adminProperties;
