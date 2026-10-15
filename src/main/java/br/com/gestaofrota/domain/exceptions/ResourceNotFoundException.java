@@ -1,4 +1,4 @@
-package br.com.gestaofrota.application.exceptions;
+package br.com.gestaofrota.domain.exceptions;
 
 public class ResourceNotFoundException extends RuntimeException {
 

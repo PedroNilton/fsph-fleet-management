@@ -1,6 +1,6 @@
 package br.com.gestaofrota.api.v1.controllers;
 
-import br.com.gestaofrota.application.results.LoginResult;
+import br.com.gestaofrota.api.v1.dtos.responses.LoginResponse;
 import br.com.gestaofrota.application.services.AuthService;
 import br.com.gestaofrota.infra.security.SecurityConfig;
 import br.com.gestaofrota.api.v1.errors.RestAccessDeniedHandler;
@@ -54,7 +54,7 @@ class AuthControllerTests {
     @Test
     void returnsCurrentLoginContractForValidCredentials() throws Exception {
         when(authService.login(anyString(), anyString()))
-                .thenReturn(new LoginResult("jwt-assinado", "Bearer", 900L));
+                .thenReturn(new LoginResponse("jwt-assinado", "Bearer", 900L));
 
         mockMvc.perform(post("/api/v1/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)

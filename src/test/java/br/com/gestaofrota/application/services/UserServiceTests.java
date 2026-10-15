@@ -1,6 +1,6 @@
 package br.com.gestaofrota.application.services;
 
-import br.com.gestaofrota.application.exceptions.ConflictException;
+import br.com.gestaofrota.domain.exceptions.ConflictException;
 import br.com.gestaofrota.domain.enums.UserRole;
 import br.com.gestaofrota.domain.models.Sector;
 import br.com.gestaofrota.domain.models.User;

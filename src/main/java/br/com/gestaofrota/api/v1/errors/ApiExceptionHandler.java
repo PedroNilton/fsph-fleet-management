@@ -1,7 +1,7 @@
 package br.com.gestaofrota.api.v1.errors;
 
-import br.com.gestaofrota.application.exceptions.ConflictException;
-import br.com.gestaofrota.application.exceptions.ResourceNotFoundException;
+import br.com.gestaofrota.domain.exceptions.ConflictException;
+import br.com.gestaofrota.domain.exceptions.ResourceNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.dao.DataIntegrityViolationException;

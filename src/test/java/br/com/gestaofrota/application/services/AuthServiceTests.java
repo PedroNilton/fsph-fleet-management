@@ -1,6 +1,6 @@
 package br.com.gestaofrota.application.services;
 
-import br.com.gestaofrota.application.results.LoginResult;
+import br.com.gestaofrota.api.v1.dtos.responses.LoginResponse;
 import br.com.gestaofrota.infra.security.jwt.JwtUtil;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -41,7 +41,7 @@ class AuthServiceTests {
         when(jwtUtil.generateToken(principal)).thenReturn("jwt-assinado");
         when(jwtUtil.getExpirationSeconds()).thenReturn(900L);
 
-        LoginResult response = new AuthService(authenticationManager, jwtUtil)
+        LoginResponse response = new AuthService(authenticationManager, jwtUtil)
                 .login(" ADMIN@EXEMPLO.COM ", "senha");
 
         ArgumentCaptor<Authentication> authenticationCaptor =

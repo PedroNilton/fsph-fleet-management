@@ -1,5 +1,6 @@
 package br.com.gestaofrota.application.services;
 
+import br.com.gestaofrota.api.v1.dtos.responses.LoginResponse;
 import br.com.gestaofrota.application.results.LoginResult;
 import br.com.gestaofrota.infra.security.jwt.JwtUtil;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -21,7 +22,7 @@ public class AuthService {
         this.jwtUtil = jwtUtil;
     }
 
-    public LoginResult login(String email, String password) {
+    public LoginResponse login(String email, String password) {
         String normalizedEmail = email.trim().toLowerCase(Locale.ROOT);
 
         Authentication authentication = authenticationManager.authenticate(
@@ -34,6 +35,6 @@ public class AuthService {
         UserDetails user = (UserDetails) authentication.getPrincipal();
         String accessToken = jwtUtil.generateToken(user);
 
-        return new LoginResult(accessToken, "Bearer", jwtUtil.getExpirationSeconds());
+        return new LoginResponse(accessToken, "Bearer", jwtUtil.getExpirationSeconds());
     }
 }
