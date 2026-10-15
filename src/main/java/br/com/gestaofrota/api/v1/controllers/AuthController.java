@@ -47,4 +47,9 @@ public class AuthController {
                 user.role()
         ));
     }
+
+    @PostMapping("/logout")
+    public ResponseEntity<Void> logout() {
+        return ResponseEntity.noContent().build();
+    }
 }

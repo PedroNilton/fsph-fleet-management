@@ -39,7 +39,7 @@ class AuthServiceTests {
         when(authenticationManager.authenticate(any(Authentication.class)))
                 .thenReturn(authenticated);
         when(jwtUtil.generateToken(principal)).thenReturn("jwt-assinado");
-        when(jwtUtil.getExpirationSeconds()).thenReturn(3600L);
+        when(jwtUtil.getExpirationSeconds()).thenReturn(900L);
 
         LoginResult response = new AuthService(authenticationManager, jwtUtil)
                 .login(" ADMIN@EXEMPLO.COM ", "senha");
@@ -53,7 +53,7 @@ class AuthServiceTests {
         assertThat(credentials.getCredentials()).isEqualTo("senha");
         assertThat(response.accessToken()).isEqualTo("jwt-assinado");
         assertThat(response.tokenType()).isEqualTo("Bearer");
-        assertThat(response.expiresIn()).isEqualTo(3600L);
+        assertThat(response.expiresIn()).isEqualTo(900L);
         verify(jwtUtil).generateToken(principal);
     }
 }

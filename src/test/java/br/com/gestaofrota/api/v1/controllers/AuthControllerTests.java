@@ -24,6 +24,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -53,7 +54,7 @@ class AuthControllerTests {
     @Test
     void returnsCurrentLoginContractForValidCredentials() throws Exception {
         when(authService.login(anyString(), anyString()))
-                .thenReturn(new LoginResult("jwt-assinado", "Bearer", 3600L));
+                .thenReturn(new LoginResult("jwt-assinado", "Bearer", 900L));
 
         mockMvc.perform(post("/api/v1/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -69,7 +70,7 @@ class AuthControllerTests {
                         {
                           "accessToken": "jwt-assinado",
                           "tokenType": "Bearer",
-                          "expiresIn": 3600
+                          "expiresIn": 900
                         }
                         """, JsonCompareMode.STRICT));
     }
@@ -156,5 +157,17 @@ class AuthControllerTests {
                           "code": "AUTHENTICATION_REQUIRED"
                         }
                         """, JsonCompareMode.STRICT));
+    }
+
+    @Test
+    void returnsNoContentOnStatelessLogout() throws Exception {
+        when(jwtUtil.extractSubject("jwt-valido")).thenReturn("admin@exemplo.com");
+
+        mockMvc.perform(post("/api/v1/auth/logout")
+                        .header("Authorization", "Bearer jwt-valido")
+                        .with(user("admin@exemplo.com").roles("ADMIN")))
+                .andExpect(status().isNoContent());
+
+        verifyNoInteractions(authService);
     }
 }
