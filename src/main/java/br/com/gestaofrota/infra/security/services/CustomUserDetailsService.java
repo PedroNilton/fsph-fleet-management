@@ -2,6 +2,7 @@ package br.com.gestaofrota.infra.security.services;
 
 import br.com.gestaofrota.domain.models.User;
 import br.com.gestaofrota.infra.repositories.UserRepository;
+import br.com.gestaofrota.infra.security.models.AuthenticatedUser;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -25,10 +26,14 @@ public class CustomUserDetailsService implements UserDetailsService {
         User user = userRepository.findByEmailIgnoreCaseAndActiveTrue(normalizedEmail)
                 .orElseThrow(() -> new UsernameNotFoundException("Credenciais inválidas"));
 
-        return org.springframework.security.core.userdetails.User
-                .withUsername(user.getEmail())
-                .password(user.getPassword())
-                .roles(user.getRole().name())
-                .build();
+        return new AuthenticatedUser(
+                user.getId(),
+                user.getSector().getId(),
+                user.getName(),
+                user.getEmail(),
+                user.getPassword(),
+                user.getRole(),
+                user.isActive()
+        );
     }
 }

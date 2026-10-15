@@ -7,12 +7,13 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
+import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -25,10 +26,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
     private final CustomUserDetailsService userDetailsService;
+    private final AuthenticationEntryPoint authenticationEntryPoint;
 
-    public JwtAuthenticationFilter(JwtUtil jwtUtil, CustomUserDetailsService userDetailsService) {
+    public JwtAuthenticationFilter(JwtUtil jwtUtil, CustomUserDetailsService userDetailsService, AuthenticationEntryPoint authenticationEntryPoint) {
         this.jwtUtil = jwtUtil;
         this.userDetailsService = userDetailsService;
+        this.authenticationEntryPoint = authenticationEntryPoint;
     }
 
     @Override
@@ -50,7 +53,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 UserDetails user = userDetailsService.loadUserByUsername(email);
 
                 if (!jwtUtil.isTokenValid(token, user)) {
-                    response.sendError(HttpStatus.UNAUTHORIZED.value(), "Token inválido");
+                    authenticationEntryPoint.commence(
+                            request,
+                            response,
+                            new BadCredentialsException("Token inválido")
+                    );
                     return;
                 }
 
@@ -66,7 +73,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
         } catch (JWTVerificationException | AuthenticationException exception) {
             SecurityContextHolder.clearContext();
-            response.sendError(HttpStatus.UNAUTHORIZED.value(), "Token inválido ou expirado");
+            authenticationEntryPoint.commence(
+                    request,
+                    response,
+                    new BadCredentialsException("Token inválido ou expirado", exception)
+            );
 
             return;
         }

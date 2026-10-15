@@ -79,7 +79,7 @@ do setor com `ADMIN_SECTOR_NAME`. Inicializações posteriores não duplicam o u
 Envie as credenciais do administrador para obter um token:
 
 ```http
-POST /api/auth/login
+POST /api/v1/auth/login
 Content-Type: application/json
 
 {
