@@ -29,7 +29,7 @@ docker --version
 docker compose version
 ```
 
-Não é necessário instalar o Maven, pois o backend possui o Maven Wrapper (`mvnw`).
+Não é necessário instalar o Maven, pois o repositório possui o Maven Wrapper (`mvnw`).
 
 ## 1. Clonar o repositório
 
@@ -142,13 +142,7 @@ Esse comando deve ser executado na raiz do projeto e repetido sempre que um novo
 
 ## 5. Iniciar o backend
 
-Depois de carregar as variáveis, entre na pasta do backend:
-
-```bash
-cd backend
-```
-
-Execute a aplicação:
+Depois de carregar as variáveis, execute a aplicação na raiz do repositório:
 
 ```bash
 ./mvnw spring-boot:run
@@ -176,8 +170,7 @@ Sempre siga esta ordem:
 2. iniciar o PostgreSQL;
 3. confirmar que o banco está saudável;
 4. carregar as variáveis do `.env`;
-5. entrar na pasta `backend`;
-6. iniciar o Spring Boot.
+5. iniciar o Spring Boot.
 
 Comandos resumidos:
 
@@ -191,7 +184,6 @@ set -a
 source .env
 set +a
 
-cd backend
 ./mvnw spring-boot:run
 ```
 
@@ -200,7 +192,7 @@ cd backend
 As migrations ficam em:
 
 ```text
-backend/src/main/resources/db/migration/
+src/main/resources/db/migration/
 ```
 
 Quando o backend é iniciado, o Flyway procura migrations nessa pasta e aplica automaticamente aquelas que ainda não foram executadas.
@@ -218,7 +210,7 @@ As migrations não precisam ser executadas manualmente.
 
 Para encerrar o backend, pressione `Ctrl+C` no terminal em que ele está sendo executado.
 
-Para parar o PostgreSQL, volte à raiz do projeto e execute:
+Para parar o PostgreSQL, na raiz do projeto, execute:
 
 ```bash
 docker compose stop postgres
@@ -246,15 +238,13 @@ set -a
 source .env
 set +a
 
-cd backend
 ./mvnw spring-boot:run
 ```
 
 Ao terminar:
 
 1. Pressione `Ctrl+C` para encerrar o backend;
-2. volte à raiz do projeto;
-3. pare o banco:
+2. pare o banco:
 
 ```bash
 docker compose stop postgres
@@ -301,7 +291,6 @@ Sair do PostgreSQL:
 Executar os testes do backend:
 
 ```bash
-cd backend
 ./mvnw test
 ```
 
