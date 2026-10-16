@@ -1,7 +1,6 @@
 package br.com.gestaofrota.application.services;
 
 import br.com.gestaofrota.api.v1.dtos.responses.LoginResponse;
-import br.com.gestaofrota.application.results.LoginResult;
 import br.com.gestaofrota.infra.security.jwt.JwtUtil;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;

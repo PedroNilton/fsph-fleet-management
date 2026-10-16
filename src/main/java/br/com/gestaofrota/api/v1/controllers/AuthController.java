@@ -1,7 +1,6 @@
 package br.com.gestaofrota.api.v1.controllers;
 
 import br.com.gestaofrota.application.services.AuthService;
-import br.com.gestaofrota.application.results.LoginResult;
 import br.com.gestaofrota.api.v1.dtos.requests.LoginRequest;
 import br.com.gestaofrota.api.v1.dtos.responses.LoginResponse;
 import br.com.gestaofrota.api.v1.dtos.responses.CurrentUserResponse;
