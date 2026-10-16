@@ -1,4 +1,4 @@
-package br.com.gestaofrota.infra.startup;
+package br.com.gestaofrota.infra.config.startup;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;

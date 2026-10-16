@@ -1,6 +1,8 @@
 package br.com.gestaofrota.infra.startup;
 
 import br.com.gestaofrota.domain.models.Sector;
+import br.com.gestaofrota.infra.config.startup.AdminInitializer;
+import br.com.gestaofrota.infra.config.startup.AdminProperties;
 import br.com.gestaofrota.infra.repositories.SectorRepository;
 import br.com.gestaofrota.domain.models.User;
 import br.com.gestaofrota.infra.repositories.UserRepository;

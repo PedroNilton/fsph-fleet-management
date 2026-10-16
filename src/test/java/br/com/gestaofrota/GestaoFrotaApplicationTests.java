@@ -1,8 +1,8 @@
 package br.com.gestaofrota;
 
 import br.com.gestaofrota.infra.security.services.CustomUserDetailsService;
-import br.com.gestaofrota.infra.startup.AdminInitializer;
-import br.com.gestaofrota.infra.startup.AdminProperties;
+import br.com.gestaofrota.infra.config.startup.AdminInitializer;
+import br.com.gestaofrota.infra.config.startup.AdminProperties;
 import br.com.gestaofrota.application.services.SectorService;
 import br.com.gestaofrota.application.services.UserService;
 import org.junit.jupiter.api.Test;

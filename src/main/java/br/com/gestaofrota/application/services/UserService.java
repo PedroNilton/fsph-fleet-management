@@ -37,7 +37,7 @@ public class UserService {
     @Transactional(readOnly = true)
     public User find(UUID id) {
         return userRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado", id));
     }
 
     @Transactional
@@ -96,7 +96,7 @@ public class UserService {
 
     private Sector findSector(UUID id) {
         return sectorRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Setor não encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException("Setor não encontrado", id));
     }
 
     private void ensureAnActiveAdminRemains(User current, UserRole newRole, boolean active) {

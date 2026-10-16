@@ -1,4 +1,4 @@
-package br.com.gestaofrota.infra.startup;
+package br.com.gestaofrota.infra.config.startup;
 
 import br.com.gestaofrota.domain.models.Sector;
 import br.com.gestaofrota.infra.repositories.SectorRepository;
