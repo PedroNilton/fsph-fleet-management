@@ -5,6 +5,7 @@ import br.com.gestaofrota.api.v1.dtos.requests.LoginRequest;
 import br.com.gestaofrota.api.v1.dtos.responses.LoginResponse;
 import br.com.gestaofrota.api.v1.dtos.responses.CurrentUserResponse;
 import br.com.gestaofrota.infra.security.models.AuthenticatedUser;
+import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -25,6 +26,7 @@ public class AuthController {
     }
 
     @PostMapping("/login")
+    @SecurityRequirements
     public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
         LoginResponse response = authService.login(
                 request.email(),
