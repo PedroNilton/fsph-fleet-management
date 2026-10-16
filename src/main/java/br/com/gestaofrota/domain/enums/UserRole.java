@@ -2,7 +2,7 @@ package br.com.gestaofrota.domain.enums;
 
 public enum UserRole {
     ADMIN,
-    USUARIO_INSTITUCIONAL,
+    EMPLOYEE,
     GESTOR_FROTA,
     MOTORISTA,
     ATENDENTE_SVO,

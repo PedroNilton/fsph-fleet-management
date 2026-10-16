@@ -15,7 +15,7 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/users")
-@PreAuthorize("hasRole('ADMIN')")
+@PreAuthorize("hasRole('ADMIN')") // significa: somente o admin pode realizar essas requisições
 public class UserController {
 
     private final UserService userService;
@@ -43,6 +43,7 @@ public class UserController {
                 request.password(),
                 request.role()
         ));
+
         return ResponseEntity.created(URI.create("/api/v1/users/" + response.id())).body(response);
     }
 

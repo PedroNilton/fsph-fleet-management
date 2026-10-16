@@ -54,7 +54,7 @@ class AuthControllerTests {
     @Test
     void returnsCurrentLoginContractForValidCredentials() throws Exception {
         when(authService.login(anyString(), anyString()))
-                .thenReturn(new LoginResponse("jwt-assinado", "Bearer", 900L));
+                .thenReturn(new LoginResponse("jwt-assinado", "Bearer", 3600L));
 
         mockMvc.perform(post("/api/v1/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -70,7 +70,7 @@ class AuthControllerTests {
                         {
                           "accessToken": "jwt-assinado",
                           "tokenType": "Bearer",
-                          "expiresIn": 900
+                          "expiresIn": 3600
                         }
                         """, JsonCompareMode.STRICT));
     }

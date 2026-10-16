@@ -20,7 +20,7 @@ class JwtUtilTests {
     @Test
     void generatesSignedTokenForAuthenticatedUser() {
         JwtUtil service = new JwtUtil(
-                new JwtProperties(SECRET, Duration.ofMinutes(15), "gestao-frotas-test")
+                new JwtProperties(SECRET, Duration.ofHours(1), "gestao-frotas-test")
         );
         UserDetails user = org.springframework.security.core.userdetails.User
                 .withUsername("admin@exemplo.com")
@@ -32,13 +32,13 @@ class JwtUtilTests {
 
         assertThat(service.extractSubject(token)).isEqualTo("admin@exemplo.com");
         assertThat(service.isTokenValid(token, user)).isTrue();
-        assertThat(service.getExpirationSeconds()).isEqualTo(900L);
+        assertThat(service.getExpirationSeconds()).isEqualTo(3600L);
     }
 
     @Test
     void rejectsTokenSignedWithAnotherSecret() {
         JwtUtil issuer = new JwtUtil(
-                new JwtProperties(SECRET, Duration.ofMinutes(15), "gestao-frotas-test")
+                new JwtProperties(SECRET, Duration.ofHours(1), "gestao-frotas-test")
         );
         JwtUtil validator = new JwtUtil(
                 new JwtProperties(
@@ -62,7 +62,7 @@ class JwtUtilTests {
     @Test
     void rejectsExpiredToken() {
         JwtUtil validator = new JwtUtil(
-                new JwtProperties(SECRET, Duration.ofMinutes(15), "gestao-frotas-test")
+                new JwtProperties(SECRET, Duration.ofHours(1), "gestao-frotas-test")
         );
         String expiredToken = JWT.create()
                 .withIssuer("gestao-frotas-test")

@@ -62,7 +62,7 @@ ADMIN_PASSWORD=admin_senha
 ADMIN_SECTOR_NAME=Administrativo
 
 JWT_SECRET=
-JWT_EXPIRATION=PT15M
+JWT_EXPIRATION=PT1H
 JWT_ISSUER=gestao-frotas
 ```
 
@@ -190,6 +190,51 @@ set +a
 ## Migrations do banco
 
 As migrations ficam em:
+## Comandos úteis
+
+Ver o estado dos serviços:
+
+```bash
+docker compose ps
+```
+
+Ver em qual porta o PostgreSQL está publicado:
+
+```bash
+docker compose port postgres 5432
+```
+
+Verificar se a porta `5432` está sendo utilizada:
+
+```bash
+sudo ss -ltnp | grep ':5432'
+```
+
+Acompanhar os logs do PostgreSQL:
+
+```bash
+docker compose logs -f postgres
+```
+
+Entrar no banco pelo terminal:
+
+```bash
+docker compose exec postgres psql -U gestao_frotas -d gestao_frotas
+```
+
+Sair do PostgreSQL:
+
+```text
+\q
+```
+
+Executar os testes do backend:
+
+```bash
+./mvnw test
+```
+
+
 
 ```text
 src/main/resources/db/migration/
@@ -249,91 +294,3 @@ Ao terminar:
 ```bash
 docker compose stop postgres
 ```
-
-## Comandos úteis
-
-Ver o estado dos serviços:
-
-```bash
-docker compose ps
-```
-
-Ver em qual porta o PostgreSQL está publicado:
-
-```bash
-docker compose port postgres 5432
-```
-
-Verificar se a porta `5432` está sendo utilizada:
-
-```bash
-sudo ss -ltnp | grep ':5432'
-```
-
-Acompanhar os logs do PostgreSQL:
-
-```bash
-docker compose logs -f postgres
-```
-
-Entrar no banco pelo terminal:
-
-```bash
-docker compose exec postgres psql -U gestao_frotas -d gestao_frotas
-```
-
-Sair do PostgreSQL:
-
-```text
-\q
-```
-
-Executar os testes do backend:
-
-```bash
-./mvnw test
-```
-
-## Problemas comuns
-
-### Erro de conexão com o Docker
-
-Se aparecer uma mensagem de permissão ao acessar `/var/run/docker.sock`, verifique se o usuário pertence ao grupo `docker`:
-
-```bash
-groups
-```
-
-### Porta 5432 ocupada
-
-Verifique qual processo está usando a porta:
-
-```bash
-sudo ss -ltnp | grep ':5432'
-```
-
-Outra alternativa é alterar `POSTGRES_PORT` no `.env`, por exemplo:
-
-```env
-POSTGRES_PORT=5433
-```
-
-Depois recrie o contêiner:
-
-```bash
-docker compose up -d --force-recreate postgres
-```
-
-### Variáveis não reconhecidas pelo Spring Boot
-
-Se o erro mostrar valores como `${POSTGRES_PORT}` ou `${POSTGRES_DB}`, as variáveis não foram carregadas no terminal.
-
-Volte à raiz do projeto e execute:
-
-```bash
-set -a
-source .env
-set +a
-```
-
-Depois inicie novamente o backend.
