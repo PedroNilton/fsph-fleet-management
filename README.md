@@ -1,4 +1,4 @@
-z# Gestão de Frotas
+# Gestão de Frotas
 
 Sistema de gestão de frotas desenvolvido com:
 
@@ -187,9 +187,6 @@ set +a
 ./mvnw spring-boot:run
 ```
 
-## Migrations do banco
-
-As migrations ficam em:
 ## Comandos úteis
 
 Ver o estado dos serviços:
@@ -235,6 +232,9 @@ Executar os testes do backend:
 ```
 
 
+## Migrations do banco
+
+As migrations ficam em:
 
 ```text
 src/main/resources/db/migration/
