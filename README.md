@@ -1,4 +1,4 @@
-# Gestão de Frotas
+# fsph-fleet-management
 
 Sistema de gestão de frotas desenvolvido com:
 
@@ -35,7 +35,7 @@ Não é necessário instalar o Maven, pois o repositório possui o Maven Wrapper
 
 ```bash
 git clone <URL_DO_REPOSITORIO>
-cd gestao-frotas
+cd fsph-fleet-management
 ```
 
 Substitua `<URL_DO_REPOSITORIO>` pela URL real do projeto.
@@ -63,7 +63,7 @@ ADMIN_SECTOR_NAME=Administrativo
 
 JWT_SECRET=
 JWT_EXPIRATION=PT1H
-JWT_ISSUER=gestao-frotas
+JWT_ISSUER=fsph-fleet-management
 ```
 
 Altere as senhas de exemplo e gere um JWT secret aleatório para o ambiente local.
@@ -175,7 +175,7 @@ Sempre siga esta ordem:
 Comandos resumidos:
 
 ```bash
-cd gestao-frotas
+cd fsph-fleet-management
 
 docker compose up -d postgres
 docker compose ps
@@ -276,7 +276,7 @@ docker compose down
 Ao começar a trabalhar:
 
 ```bash
-cd gestao-frotas
+cd fsph-fleet-management
 docker compose up -d postgres
 
 set -a

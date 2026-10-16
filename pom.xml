@@ -9,9 +9,9 @@
 		<relativePath/>
 	</parent>
 	<groupId>br.com.gestaofrota</groupId>
-	<artifactId>backend</artifactId>
+	<artifactId>fsph-fleet-management</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>GestaoFrotaBackend</name>
+	<name>fsph-fleet-management</name>
 	<description>API do sistema de gestao de frotas</description>
 	<url/>
 	<licenses>
