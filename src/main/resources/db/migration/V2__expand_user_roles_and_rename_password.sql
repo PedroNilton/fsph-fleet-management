@@ -12,7 +12,7 @@ ALTER TABLE users
     ADD CONSTRAINT chk_users_role CHECK (
         role IN (
             'ADMIN',
-            'USUARIO_INSTITUCIONAL',
+            'EMPLOYEE',
             'GESTOR_FROTA',
             'MOTORISTA',
             'ATENDENTE_SVO',
