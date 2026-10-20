@@ -4,9 +4,10 @@ public class UnauthorizedAccessException extends ExceptionMessageBuilder {
 
     public UnauthorizedAccessException() {
         super(
-                "Unauthorized Access",
-                "You are not authorized to access this resource.",
-                403
+                "Acesso negado",
+                "Você não possui permissão para executar esta operação.",
+                403,
+                "ACCESS_DENIED"
         );
     }
 }

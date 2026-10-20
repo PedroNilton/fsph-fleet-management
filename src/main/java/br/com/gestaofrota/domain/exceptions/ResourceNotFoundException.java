@@ -4,9 +4,10 @@ public class ResourceNotFoundException extends ExceptionMessageBuilder {
 
     public ResourceNotFoundException(String resource, Object id) {
         super(
-                "Resource not found",
-                "%s with identifier '%s' was not found.".formatted(resource, id),
-                404
+                "Recurso não encontrado",
+                "%s com identificador '%s' não encontrado.".formatted(resource, id),
+                404,
+                "RESOURCE_NOT_FOUND"
         );
     }
 }

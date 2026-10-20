@@ -4,4 +4,5 @@ public interface ExceptionInterface {
     String getTitle();
     String getMessage();
     int getStatusCode();
+    String getCode();
 }
