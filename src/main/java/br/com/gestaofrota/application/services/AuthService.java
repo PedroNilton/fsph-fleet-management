@@ -1,9 +1,9 @@
 package br.com.gestaofrota.application.services;
 
-import br.com.gestaofrota.application.models.LoginResult;
+import br.com.gestaofrota.api.v1.dtos.LoginResult;
 import br.com.gestaofrota.infra.security.jwt.JwtService;
 import br.com.gestaofrota.infra.security.services.RevokedTokenService;
-import br.com.gestaofrota.application.exceptions.InvalidTokenException;
+import br.com.gestaofrota.domain.exceptions.InvalidTokenException;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -46,6 +46,7 @@ public class AuthService {
         if (token == null || token.isBlank()) {
             throw new InvalidTokenException("Token ausente ou inválido");
         }
+
         try {
             revokedTokenService.revoke(token);
         } catch (JWTVerificationException exception) {

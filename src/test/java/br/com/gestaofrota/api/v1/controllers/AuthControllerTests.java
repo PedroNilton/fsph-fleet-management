@@ -1,6 +1,6 @@
 package br.com.gestaofrota.api.v1.controllers;
 
-import br.com.gestaofrota.application.models.LoginResult;
+import br.com.gestaofrota.api.v1.dtos.LoginResult;
 import br.com.gestaofrota.application.services.AuthService;
 import br.com.gestaofrota.infra.security.SecurityConfig;
 import br.com.gestaofrota.api.v1.errors.RestAccessDeniedHandler;
@@ -25,7 +25,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.util.UUID;
 import java.util.Set;
 import br.com.gestaofrota.domain.enums.Permission;
-import br.com.gestaofrota.application.exceptions.InvalidTokenException;
+import br.com.gestaofrota.domain.exceptions.InvalidTokenException;
 
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.verify;

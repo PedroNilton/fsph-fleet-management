@@ -1,6 +1,6 @@
 package br.com.gestaofrota.api.v1.errors;
 
-import br.com.gestaofrota.application.exceptions.InvalidTokenException;
+import br.com.gestaofrota.domain.exceptions.InvalidTokenException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.security.core.AuthenticationException;
