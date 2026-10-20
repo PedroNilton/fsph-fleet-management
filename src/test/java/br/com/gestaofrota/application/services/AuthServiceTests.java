@@ -1,9 +1,9 @@
 package br.com.gestaofrota.application.services;
 
-import br.com.gestaofrota.api.v1.dtos.responses.LoginResponse;
+import br.com.gestaofrota.application.models.LoginResult;
 import br.com.gestaofrota.infra.security.jwt.JwtService;
 import br.com.gestaofrota.infra.security.services.RevokedTokenService;
-import br.com.gestaofrota.infra.security.exceptions.InvalidTokenException;
+import br.com.gestaofrota.application.exceptions.InvalidTokenException;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -49,7 +49,7 @@ class AuthServiceTests {
         when(jwtService.generateToken(principal)).thenReturn("jwt-assinado");
         when(jwtService.getExpirationSeconds()).thenReturn(3600L);
 
-        LoginResponse response = new AuthService(authenticationManager, jwtService, revokedTokenService)
+        LoginResult response = new AuthService(authenticationManager, jwtService, revokedTokenService)
                 .login(" ADMIN@EXEMPLO.COM ", "senha");
 
         ArgumentCaptor<Authentication> authenticationCaptor =
@@ -60,7 +60,6 @@ class AuthServiceTests {
         assertThat(credentials.getPrincipal()).isEqualTo("admin@exemplo.com");
         assertThat(credentials.getCredentials()).isEqualTo("senha");
         assertThat(response.accessToken()).isEqualTo("jwt-assinado");
-        assertThat(response.tokenType()).isEqualTo("Bearer");
         assertThat(response.expiresIn()).isEqualTo(3600L);
         verify(jwtService).generateToken(principal);
     }
@@ -71,7 +70,7 @@ class AuthServiceTests {
                 .when(revokedTokenService).revoke("jwt-expirado");
 
         assertThatThrownBy(() -> new AuthService(authenticationManager, jwtService, revokedTokenService)
-                .logout("Bearer jwt-expirado"))
+                .logout("jwt-expirado"))
                 .isInstanceOf(InvalidTokenException.class);
     }
 }

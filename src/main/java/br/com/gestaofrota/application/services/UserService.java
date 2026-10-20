@@ -37,7 +37,7 @@ public class UserService {
     @Transactional(readOnly = true)
     public User find(UUID id) {
         return userRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado", id));
+                .orElseThrow(() -> new ResourceNotFoundException("Usuário", id));
     }
 
     @Transactional
@@ -96,14 +96,14 @@ public class UserService {
 
     private Sector findSector(UUID id) {
         return sectorRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Setor não encontrado", id));
+                .orElseThrow(() -> new ResourceNotFoundException("Setor", id));
     }
 
     private void ensureAnActiveAdminRemains(User current, UserRole newRole, boolean active) {
         boolean removesActiveAdmin = current.getRole() == UserRole.ADMIN
                 && current.isActive()
                 && (newRole != UserRole.ADMIN || !active);
-        if (removesActiveAdmin && userRepository.countByRoleAndActiveTrue(UserRole.ADMIN) <= 1) {
+        if (removesActiveAdmin && userRepository.lockActiveByRole(UserRole.ADMIN).size() <= 1) {
             throw new ConflictException("O último administrador ativo não pode ser desativado ou rebaixado");
         }
     }

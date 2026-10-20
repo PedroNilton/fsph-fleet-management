@@ -15,7 +15,6 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/sectors")
-@PreAuthorize("hasRole('ADMIN')")
 public class SectorController {
 
     private final SectorService sectorService;
@@ -25,27 +24,32 @@ public class SectorController {
     }
 
     @GetMapping
+    @PreAuthorize("hasAuthority('SECTORS_READ')")
     public List<SectorResponse> list() {
         return sectorService.list().stream().map(SectorResponse::from).toList();
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAuthority('SECTORS_READ')")
     public SectorResponse find(@PathVariable UUID id) {
         return SectorResponse.from(sectorService.find(id));
     }
 
     @PostMapping
+    @PreAuthorize("hasAuthority('SECTORS_WRITE')")
     public ResponseEntity<SectorResponse> create(@Valid @RequestBody CreateSectorRequest request) {
         SectorResponse response = SectorResponse.from(sectorService.create(request.name()));
         return ResponseEntity.created(URI.create("/api/v1/sectors/" + response.id())).body(response);
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasAuthority('SECTORS_WRITE')")
     public SectorResponse update(@PathVariable UUID id, @Valid @RequestBody UpdateSectorRequest request) {
         return SectorResponse.from(sectorService.update(id, request.name()));
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAuthority('SECTORS_WRITE')")
     public ResponseEntity<Void> delete(@PathVariable UUID id) {
         sectorService.delete(id);
         return ResponseEntity.noContent().build();

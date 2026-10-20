@@ -1,6 +1,6 @@
 package br.com.gestaofrota.infra.repositories;
 
-import br.com.gestaofrota.infra.security.RevokedToken;
+import br.com.gestaofrota.domain.models.RevokedToken;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;

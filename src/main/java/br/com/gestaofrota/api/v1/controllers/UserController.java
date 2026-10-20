@@ -15,7 +15,6 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/users")
-@PreAuthorize("hasRole('ADMIN')") // significa: somente o admin pode realizar essas requisições
 public class UserController {
 
     private final UserService userService;
@@ -25,16 +24,19 @@ public class UserController {
     }
 
     @GetMapping
+    @PreAuthorize("hasAuthority('USERS_READ')")
     public List<UserResponse> list() {
         return userService.list().stream().map(UserResponse::from).toList();
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAuthority('USERS_READ')")
     public UserResponse find(@PathVariable UUID id) {
         return UserResponse.from(userService.find(id));
     }
 
     @PostMapping
+    @PreAuthorize("hasAuthority('USERS_WRITE')")
     public ResponseEntity<UserResponse> create(@Valid @RequestBody CreateUserRequest request) {
         UserResponse response = UserResponse.from(userService.create(
                 request.sectorId(),
@@ -48,6 +50,7 @@ public class UserController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasAuthority('USERS_WRITE')")
     public UserResponse update(@PathVariable UUID id, @Valid @RequestBody UpdateUserRequest request) {
         return UserResponse.from(userService.update(
                 id,
@@ -61,6 +64,7 @@ public class UserController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAuthority('USERS_WRITE')")
     public ResponseEntity<Void> deactivate(@PathVariable UUID id) {
         userService.deactivate(id);
         return ResponseEntity.noContent().build();

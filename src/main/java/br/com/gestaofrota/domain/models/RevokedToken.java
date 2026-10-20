@@ -1,4 +1,4 @@
-package br.com.gestaofrota.infra.security;
+package br.com.gestaofrota.domain.models;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

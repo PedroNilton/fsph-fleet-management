@@ -2,6 +2,7 @@ package br.com.gestaofrota.infra.security.services;
 
 import br.com.gestaofrota.domain.models.User;
 import br.com.gestaofrota.infra.repositories.UserRepository;
+import br.com.gestaofrota.application.services.RolePermissionService;
 import br.com.gestaofrota.infra.security.models.AuthenticatedUser;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -14,9 +15,11 @@ import java.util.Locale;
 public class CustomUserDetailsService implements UserDetailsService {
 
     private final UserRepository userRepository;
+    private final RolePermissionService rolePermissionService;
 
-    public CustomUserDetailsService(UserRepository userRepository) {
+    public CustomUserDetailsService(UserRepository userRepository, RolePermissionService rolePermissionService) {
         this.userRepository = userRepository;
+        this.rolePermissionService = rolePermissionService;
     }
 
     @Override
@@ -33,7 +36,8 @@ public class CustomUserDetailsService implements UserDetailsService {
                 user.getEmail(),
                 user.getPassword(),
                 user.getRole(),
-                user.isActive()
+                user.isActive(),
+                rolePermissionService.find(user.getRole())
         );
     }
 }

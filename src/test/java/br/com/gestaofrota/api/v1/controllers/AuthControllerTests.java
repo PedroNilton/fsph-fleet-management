@@ -1,6 +1,6 @@
 package br.com.gestaofrota.api.v1.controllers;
 
-import br.com.gestaofrota.api.v1.dtos.responses.LoginResponse;
+import br.com.gestaofrota.application.models.LoginResult;
 import br.com.gestaofrota.application.services.AuthService;
 import br.com.gestaofrota.infra.security.SecurityConfig;
 import br.com.gestaofrota.api.v1.errors.RestAccessDeniedHandler;
@@ -25,7 +25,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.util.UUID;
 import java.util.Set;
 import br.com.gestaofrota.domain.enums.Permission;
-import br.com.gestaofrota.infra.security.exceptions.InvalidTokenException;
+import br.com.gestaofrota.application.exceptions.InvalidTokenException;
 
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.verify;
@@ -62,7 +62,7 @@ class AuthControllerTests {
     @Test
     void returnsCurrentLoginContractForValidCredentials() throws Exception {
         when(authService.login(anyString(), anyString()))
-                .thenReturn(new LoginResponse("jwt-assinado", "Bearer", 3600L));
+                .thenReturn(new LoginResult("jwt-assinado", 3600L));
 
         mockMvc.perform(post("/api/v1/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -181,14 +181,14 @@ class AuthControllerTests {
                         .with(user("admin@exemplo.com").roles("ADMIN")))
                 .andExpect(status().isNoContent());
 
-        verify(authService).logout("Bearer jwt-valido");
+        verify(authService).logout("jwt-valido");
     }
 
     @Test
     void distinguishesInvalidLogoutTokenFromInvalidLoginCredentials() throws Exception {
         when(jwtService.extractSubject("jwt-invalido")).thenReturn("admin@exemplo.com");
         doThrow(new InvalidTokenException("Token inválido"))
-                .when(authService).logout("Bearer jwt-invalido");
+                .when(authService).logout("jwt-invalido");
 
         mockMvc.perform(post("/api/v1/auth/logout")
                         .header("Authorization", "Bearer jwt-invalido")

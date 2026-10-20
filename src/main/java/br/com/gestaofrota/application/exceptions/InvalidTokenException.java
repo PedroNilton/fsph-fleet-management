@@ -1,4 +1,4 @@
-package br.com.gestaofrota.infra.security.exceptions;
+package br.com.gestaofrota.application.exceptions;
 
 import org.springframework.security.core.AuthenticationException;
 

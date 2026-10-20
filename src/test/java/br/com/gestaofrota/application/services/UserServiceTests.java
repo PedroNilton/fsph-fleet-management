@@ -14,6 +14,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.Optional;
+import java.util.List;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -60,7 +61,7 @@ class UserServiceTests {
         UUID id = UUID.randomUUID();
         User admin = new User(new Sector("Administração"), "Admin", "admin@exemplo.com", "hash", UserRole.ADMIN);
         when(userRepository.findById(id)).thenReturn(Optional.of(admin));
-        when(userRepository.countByRoleAndActiveTrue(UserRole.ADMIN)).thenReturn(1L);
+        when(userRepository.lockActiveByRole(UserRole.ADMIN)).thenReturn(List.of(admin));
 
         assertThrows(ConflictException.class, () -> userService.deactivate(id));
         assertTrue(admin.isActive());
@@ -74,6 +75,6 @@ class UserServiceTests {
         when(userRepository.findById(id)).thenReturn(Optional.of(user));
 
         assertDoesNotThrow(() -> userService.deactivate(id));
-        verify(userRepository, never()).countByRoleAndActiveTrue(any());
+        verify(userRepository, never()).lockActiveByRole(any());
     }
 }

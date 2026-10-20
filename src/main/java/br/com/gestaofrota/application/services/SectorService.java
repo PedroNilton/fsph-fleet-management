@@ -31,7 +31,7 @@ public class SectorService {
     @Transactional(readOnly = true)
     public Sector find(UUID id) {
         return sectorRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Setor não encontrado", id));
+                .orElseThrow(() -> new ResourceNotFoundException("Setor", id));
     }
 
     @Transactional

@@ -1,9 +1,9 @@
 package br.com.gestaofrota.application.services;
 
-import br.com.gestaofrota.api.v1.dtos.responses.LoginResponse;
+import br.com.gestaofrota.application.models.LoginResult;
 import br.com.gestaofrota.infra.security.jwt.JwtService;
 import br.com.gestaofrota.infra.security.services.RevokedTokenService;
-import br.com.gestaofrota.infra.security.exceptions.InvalidTokenException;
+import br.com.gestaofrota.application.exceptions.InvalidTokenException;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -26,7 +26,7 @@ public class AuthService {
         this.revokedTokenService = revokedTokenService;
     }
 
-    public LoginResponse login(String email, String password) {
+    public LoginResult login(String email, String password) {
         String normalizedEmail = email.trim().toLowerCase(Locale.ROOT);
 
         Authentication authentication = authenticationManager.authenticate(
@@ -39,17 +39,15 @@ public class AuthService {
         UserDetails user = (UserDetails) authentication.getPrincipal();
         String accessToken = jwtService.generateToken(user);
 
-        return new LoginResponse(accessToken, "Bearer", jwtService.getExpirationSeconds());
+        return new LoginResult(accessToken, jwtService.getExpirationSeconds());
     }
 
-    public void logout(String authorization) {
-        if (authorization == null
-                || !authorization.startsWith("Bearer ")
-                || authorization.length() == "Bearer ".length()) {
+    public void logout(String token) {
+        if (token == null || token.isBlank()) {
             throw new InvalidTokenException("Token ausente ou inválido");
         }
         try {
-            revokedTokenService.revoke(authorization.substring("Bearer ".length()));
+            revokedTokenService.revoke(token);
         } catch (JWTVerificationException exception) {
             throw new InvalidTokenException("Token inválido ou expirado", exception);
         }

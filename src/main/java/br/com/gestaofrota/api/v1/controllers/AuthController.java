@@ -4,7 +4,9 @@ import br.com.gestaofrota.application.services.AuthService;
 import br.com.gestaofrota.api.v1.dtos.requests.LoginRequest;
 import br.com.gestaofrota.api.v1.dtos.responses.LoginResponse;
 import br.com.gestaofrota.api.v1.dtos.responses.CurrentUserResponse;
+import br.com.gestaofrota.application.models.LoginResult;
 import br.com.gestaofrota.infra.security.models.AuthenticatedUser;
+import br.com.gestaofrota.application.exceptions.InvalidTokenException;
 import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
@@ -30,12 +32,12 @@ public class AuthController {
     @PostMapping("/login")
     @SecurityRequirements
     public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
-        LoginResponse response = authService.login(
+        LoginResult result = authService.login(
                 request.email(),
                 request.password()
         );
 
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(new LoginResponse(result.accessToken(), "Bearer", result.expiresIn()));
     }
 
     @GetMapping("/me")
@@ -51,7 +53,13 @@ public class AuthController {
 
     @PostMapping("/logout")
     public ResponseEntity<Void> logout(@RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authorization) {
-        authService.logout(authorization);
+        String bearerPrefix = "Bearer ";
+        if (authorization == null
+                || !authorization.startsWith(bearerPrefix)
+                || authorization.length() == bearerPrefix.length()) {
+            throw new InvalidTokenException("Token ausente ou inválido");
+        }
+        authService.logout(authorization.substring(bearerPrefix.length()));
         return ResponseEntity.noContent().build();
     }
 }

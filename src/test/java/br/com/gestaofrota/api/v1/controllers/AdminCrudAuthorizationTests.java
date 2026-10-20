@@ -5,7 +5,9 @@ import br.com.gestaofrota.api.v1.errors.RestAuthenticationEntryPoint;
 import br.com.gestaofrota.application.services.SectorService;
 import br.com.gestaofrota.application.services.UserService;
 import br.com.gestaofrota.infra.security.SecurityConfig;
-import br.com.gestaofrota.infra.security.jwt.JwtUtil;
+import br.com.gestaofrota.infra.security.jwt.JwtService;
+import br.com.gestaofrota.infra.security.services.RevokedTokenService;
+import br.com.gestaofrota.domain.exceptions.ResourceNotFoundException;
 import br.com.gestaofrota.infra.security.services.CustomUserDetailsService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,10 +19,12 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
+import java.util.UUID;
 
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest({SectorController.class, UserController.class})
@@ -39,7 +43,10 @@ class AdminCrudAuthorizationTests {
     private UserService userService;
 
     @MockitoBean
-    private JwtUtil jwtUtil;
+    private JwtService jwtService;
+
+    @MockitoBean
+    private RevokedTokenService revokedTokenService;
 
     @MockitoBean
     private CustomUserDetailsService customUserDetailsService;
@@ -49,16 +56,17 @@ class AdminCrudAuthorizationTests {
         when(sectorService.list()).thenReturn(List.of());
         when(userService.list()).thenReturn(List.of());
 
-        mockMvc.perform(get("/api/v1/sectors").with(user("admin").roles("ADMIN")))
+        mockMvc.perform(get("/api/v1/sectors").with(user("admin").authorities(() -> "SECTORS_READ")))
                 .andExpect(status().isOk());
-        mockMvc.perform(get("/api/v1/users").with(user("admin").roles("ADMIN")))
+        mockMvc.perform(get("/api/v1/users").with(user("admin").authorities(() -> "USERS_READ")))
                 .andExpect(status().isOk());
     }
 
     @Test
     void deniesNonAdminAccess() throws Exception {
-        mockMvc.perform(get("/api/v1/sectors").with(user("gestor").roles("GESTOR_FROTA")))
-                .andExpect(status().isForbidden());
+        when(sectorService.list()).thenReturn(List.of());
+        mockMvc.perform(get("/api/v1/sectors").with(user("gestor").authorities(() -> "SECTORS_READ")))
+                .andExpect(status().isOk());
         mockMvc.perform(get("/api/v1/users").with(user("gestor").roles("GESTOR_FROTA")))
                 .andExpect(status().isForbidden());
     }
@@ -69,5 +77,17 @@ class AdminCrudAuthorizationTests {
                 .andExpect(status().isUnauthorized());
         mockMvc.perform(get("/api/v1/users"))
                 .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void returnsDomainExceptionFieldsForMissingSector() throws Exception {
+        UUID id = UUID.randomUUID();
+        when(sectorService.find(id)).thenThrow(new ResourceNotFoundException("Setor", id));
+
+        mockMvc.perform(get("/api/v1/sectors/{id}", id).with(user("admin").authorities(() -> "SECTORS_READ")))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.title").value("Recurso não encontrado"))
+                .andExpect(jsonPath("$.detail").value("Setor com identificador '" + id + "' não encontrado."))
+                .andExpect(jsonPath("$.code").value("RESOURCE_NOT_FOUND"));
     }
 }
