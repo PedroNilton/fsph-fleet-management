@@ -106,8 +106,8 @@ revogação simples e evita criar credenciais de longa duração sem necessidade
 
 ## Matriz de acesso (HU01–HU03)
 
-A [matriz endpoint × perfil padrão](docs/matriz-acesso.md) detalha os sete
-perfis; a tabela abaixo mostra as permissões exigidas por operação.
+A tabela abaixo resume as permissões exigidas por operação e o acesso inicial
+dos perfis.
 
 | Endpoint | Permissão | ADMIN | Outros perfis (padrão) |
 | --- | --- | --- | --- |
