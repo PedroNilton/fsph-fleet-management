@@ -1,10 +1,12 @@
 package br.com.gestaofrota;
 
 import br.com.gestaofrota.infra.security.services.CustomUserDetailsService;
+import br.com.gestaofrota.infra.security.services.RevokedTokenService;
 import br.com.gestaofrota.infra.config.startup.AdminInitializer;
 import br.com.gestaofrota.infra.config.startup.AdminProperties;
 import br.com.gestaofrota.application.services.SectorService;
 import br.com.gestaofrota.application.services.UserService;
+import br.com.gestaofrota.infra.repositories.RolePermissionRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -24,10 +26,16 @@ class GestaoFrotaApplicationTests {
 	private CustomUserDetailsService customUserDetailsService;
 
 	@MockitoBean
+	private RevokedTokenService revokedTokenService;
+
+	@MockitoBean
 	private SectorService sectorService;
 
 	@MockitoBean
 	private UserService userService;
+
+	@MockitoBean
+	private RolePermissionRepository rolePermissionRepository;
 
 	@Autowired
 	private AdminProperties adminProperties;

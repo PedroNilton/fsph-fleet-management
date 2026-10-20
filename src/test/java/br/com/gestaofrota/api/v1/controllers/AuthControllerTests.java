@@ -5,7 +5,8 @@ import br.com.gestaofrota.application.services.AuthService;
 import br.com.gestaofrota.infra.security.SecurityConfig;
 import br.com.gestaofrota.api.v1.errors.RestAccessDeniedHandler;
 import br.com.gestaofrota.api.v1.errors.RestAuthenticationEntryPoint;
-import br.com.gestaofrota.infra.security.jwt.JwtUtil;
+import br.com.gestaofrota.infra.security.jwt.JwtService;
+import br.com.gestaofrota.infra.security.services.RevokedTokenService;
 import br.com.gestaofrota.infra.security.models.AuthenticatedUser;
 import br.com.gestaofrota.infra.security.services.CustomUserDetailsService;
 import br.com.gestaofrota.domain.enums.UserRole;
@@ -22,11 +23,15 @@ import org.springframework.test.json.JsonCompareMode;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.UUID;
+import java.util.Set;
+import br.com.gestaofrota.domain.enums.Permission;
+import br.com.gestaofrota.infra.security.exceptions.InvalidTokenException;
 
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.doThrow;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -46,7 +51,10 @@ class AuthControllerTests {
     private AuthService authService;
 
     @MockitoBean
-    private JwtUtil jwtUtil;
+    private JwtService jwtService;
+
+    @MockitoBean
+    private RevokedTokenService revokedTokenService;
 
     @MockitoBean
     private CustomUserDetailsService customUserDetailsService;
@@ -85,7 +93,10 @@ class AuthControllerTests {
                                   "password": ""
                                 }
                                 """))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON))
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$.code")
+                        .value("VALIDATION_ERROR"));
 
         verifyNoInteractions(authService);
     }
@@ -110,7 +121,8 @@ class AuthControllerTests {
                           "title": "Falha na autenticação",
                           "status": 401,
                           "detail": "E-mail ou senha inválidos",
-                          "instance": "/api/v1/auth/login"
+                          "instance": "/api/v1/auth/login",
+                          "code": "AUTHENTICATION_FAILED"
                         }
                         """, JsonCompareMode.STRICT));
     }
@@ -126,7 +138,8 @@ class AuthControllerTests {
                 "gestora@exemplo.com",
                 "senha-codificada",
                 UserRole.GESTOR_FROTA,
-                true
+                true,
+                Set.of(Permission.SECTORS_READ)
         );
 
         mockMvc.perform(get("/api/v1/auth/me").with(user(authenticatedUser)))
@@ -160,14 +173,28 @@ class AuthControllerTests {
     }
 
     @Test
-    void returnsNoContentOnStatelessLogout() throws Exception {
-        when(jwtUtil.extractSubject("jwt-valido")).thenReturn("admin@exemplo.com");
+    void revokesBearerTokenOnLogout() throws Exception {
+        when(jwtService.extractSubject("jwt-valido")).thenReturn("admin@exemplo.com");
 
         mockMvc.perform(post("/api/v1/auth/logout")
                         .header("Authorization", "Bearer jwt-valido")
                         .with(user("admin@exemplo.com").roles("ADMIN")))
                 .andExpect(status().isNoContent());
 
-        verifyNoInteractions(authService);
+        verify(authService).logout("Bearer jwt-valido");
+    }
+
+    @Test
+    void distinguishesInvalidLogoutTokenFromInvalidLoginCredentials() throws Exception {
+        when(jwtService.extractSubject("jwt-invalido")).thenReturn("admin@exemplo.com");
+        doThrow(new InvalidTokenException("Token inválido"))
+                .when(authService).logout("Bearer jwt-invalido");
+
+        mockMvc.perform(post("/api/v1/auth/logout")
+                        .header("Authorization", "Bearer jwt-invalido")
+                        .with(user("admin@exemplo.com").roles("ADMIN")))
+                .andExpect(status().isUnauthorized())
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$.code")
+                        .value("INVALID_TOKEN"));
     }
 }

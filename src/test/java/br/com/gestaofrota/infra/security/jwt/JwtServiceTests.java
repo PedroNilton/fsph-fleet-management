@@ -13,13 +13,13 @@ import java.util.Date;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-class JwtUtilTests {
+class JwtServiceTests {
 
     private static final String SECRET = "segredo-de-teste-com-mais-de-32-caracteres";
 
     @Test
     void generatesSignedTokenForAuthenticatedUser() {
-        JwtUtil service = new JwtUtil(
+        JwtService service = new JwtService(
                 new JwtProperties(SECRET, Duration.ofHours(1), "gestao-frotas-test")
         );
         UserDetails user = org.springframework.security.core.userdetails.User
@@ -29,18 +29,22 @@ class JwtUtilTests {
                 .build();
 
         String token = service.generateToken(user);
+        String secondToken = service.generateToken(user);
 
         assertThat(service.extractSubject(token)).isEqualTo("admin@exemplo.com");
+        assertThat(JWT.decode(token).getId()).isNotBlank();
+        assertThat(secondToken).isNotEqualTo(token);
+        assertThat(service.getExpiration(token)).isAfter(Instant.now());
         assertThat(service.isTokenValid(token, user)).isTrue();
         assertThat(service.getExpirationSeconds()).isEqualTo(3600L);
     }
 
     @Test
     void rejectsTokenSignedWithAnotherSecret() {
-        JwtUtil issuer = new JwtUtil(
+        JwtService issuer = new JwtService(
                 new JwtProperties(SECRET, Duration.ofHours(1), "gestao-frotas-test")
         );
-        JwtUtil validator = new JwtUtil(
+        JwtService validator = new JwtService(
                 new JwtProperties(
                         "outro-segredo-de-teste-com-mais-de-32-caracteres",
                         Duration.ofHours(1),
@@ -61,7 +65,7 @@ class JwtUtilTests {
 
     @Test
     void rejectsExpiredToken() {
-        JwtUtil validator = new JwtUtil(
+        JwtService validator = new JwtService(
                 new JwtProperties(SECRET, Duration.ofHours(1), "gestao-frotas-test")
         );
         String expiredToken = JWT.create()

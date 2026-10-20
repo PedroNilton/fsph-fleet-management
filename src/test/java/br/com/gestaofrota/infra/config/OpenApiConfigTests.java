@@ -2,7 +2,9 @@ package br.com.gestaofrota.infra.config;
 
 import br.com.gestaofrota.application.services.SectorService;
 import br.com.gestaofrota.application.services.UserService;
+import br.com.gestaofrota.infra.repositories.RolePermissionRepository;
 import br.com.gestaofrota.infra.config.startup.AdminInitializer;
+import br.com.gestaofrota.infra.security.services.RevokedTokenService;
 import br.com.gestaofrota.infra.security.services.CustomUserDetailsService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,10 +33,16 @@ class OpenApiConfigTests {
     private CustomUserDetailsService customUserDetailsService;
 
     @MockitoBean
+    private RevokedTokenService revokedTokenService;
+
+    @MockitoBean
     private SectorService sectorService;
 
     @MockitoBean
     private UserService userService;
+
+    @MockitoBean
+    private RolePermissionRepository rolePermissionRepository;
 
     @Test
     void documentsBearerAuthenticationGloballyAndKeepsLoginPublic() throws Exception {

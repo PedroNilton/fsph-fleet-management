@@ -1,6 +1,7 @@
 package br.com.gestaofrota.infra.security.jwt;
 
 import br.com.gestaofrota.infra.security.services.CustomUserDetailsService;
+import br.com.gestaofrota.infra.security.services.RevokedTokenService;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -24,16 +25,19 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private static final String BEARER_PREFIX = "Bearer ";
 
-    private final JwtUtil jwtUtil;
+    private final JwtService jwtService;
+    private final RevokedTokenService revokedTokenService;
     private final CustomUserDetailsService userDetailsService;
     private final AuthenticationEntryPoint authenticationEntryPoint;
 
     public JwtAuthenticationFilter(
-            JwtUtil jwtUtil,
+            JwtService jwtService,
+            RevokedTokenService revokedTokenService,
             CustomUserDetailsService userDetailsService,
             AuthenticationEntryPoint authenticationEntryPoint
     ) {
-        this.jwtUtil = jwtUtil;
+        this.jwtService = jwtService;
+        this.revokedTokenService = revokedTokenService;
         this.userDetailsService = userDetailsService;
         this.authenticationEntryPoint = authenticationEntryPoint;
     }
@@ -51,12 +55,18 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String token = authorization.substring(BEARER_PREFIX.length());
 
         try {
-            String email = jwtUtil.extractSubject(token);
+            String email = jwtService.extractSubject(token);
+
+            if (revokedTokenService.isRevoked(token)) {
+                SecurityContextHolder.clearContext();
+                authenticationEntryPoint.commence(request, response, new BadCredentialsException("Token revogado"));
+                return;
+            }
 
             if (SecurityContextHolder.getContext().getAuthentication() == null) {
                 UserDetails user = userDetailsService.loadUserByUsername(email);
 
-                if (!jwtUtil.isTokenValid(token, user)) {
+                if (!jwtService.isTokenValid(token, user)) {
                     authenticationEntryPoint.commence(
                             request,
                             response,

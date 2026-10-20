@@ -1,7 +1,10 @@
 package br.com.gestaofrota.application.services;
 
 import br.com.gestaofrota.api.v1.dtos.responses.LoginResponse;
-import br.com.gestaofrota.infra.security.jwt.JwtUtil;
+import br.com.gestaofrota.infra.security.jwt.JwtService;
+import br.com.gestaofrota.infra.security.services.RevokedTokenService;
+import br.com.gestaofrota.infra.security.exceptions.InvalidTokenException;
+import com.auth0.jwt.exceptions.JWTVerificationException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -13,8 +16,10 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -25,7 +30,10 @@ class AuthServiceTests {
     private AuthenticationManager authenticationManager;
 
     @Mock
-    private JwtUtil jwtUtil;
+    private JwtService jwtService;
+
+    @Mock
+    private RevokedTokenService revokedTokenService;
 
     @Test
     void authenticatesNormalizedEmailBeforeGeneratingToken() {
@@ -38,10 +46,10 @@ class AuthServiceTests {
         when(authenticated.getPrincipal()).thenReturn(principal);
         when(authenticationManager.authenticate(any(Authentication.class)))
                 .thenReturn(authenticated);
-        when(jwtUtil.generateToken(principal)).thenReturn("jwt-assinado");
-        when(jwtUtil.getExpirationSeconds()).thenReturn(3600L);
+        when(jwtService.generateToken(principal)).thenReturn("jwt-assinado");
+        when(jwtService.getExpirationSeconds()).thenReturn(3600L);
 
-        LoginResponse response = new AuthService(authenticationManager, jwtUtil)
+        LoginResponse response = new AuthService(authenticationManager, jwtService, revokedTokenService)
                 .login(" ADMIN@EXEMPLO.COM ", "senha");
 
         ArgumentCaptor<Authentication> authenticationCaptor =
@@ -54,6 +62,16 @@ class AuthServiceTests {
         assertThat(response.accessToken()).isEqualTo("jwt-assinado");
         assertThat(response.tokenType()).isEqualTo("Bearer");
         assertThat(response.expiresIn()).isEqualTo(3600L);
-        verify(jwtUtil).generateToken(principal);
+        verify(jwtService).generateToken(principal);
+    }
+
+    @Test
+    void mapsTokenExpirationDuringLogoutToUnauthorized() {
+        doThrow(new JWTVerificationException("expirado"))
+                .when(revokedTokenService).revoke("jwt-expirado");
+
+        assertThatThrownBy(() -> new AuthService(authenticationManager, jwtService, revokedTokenService)
+                .logout("Bearer jwt-expirado"))
+                .isInstanceOf(InvalidTokenException.class);
     }
 }

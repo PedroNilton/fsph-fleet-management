@@ -94,8 +94,49 @@ Nas rotas protegidas, envie o token retornado no cabeçalho:
 Authorization: Bearer <token>
 ```
 
-Somente o login e o health check são públicos. As demais rotas exigem um JWT
-válido.
+Login, health check e documentação Swagger são públicos. As rotas de negócio
+exigem um JWT válido e a permissão indicada na matriz abaixo.
+
+Para encerrar a sessão, envie `POST /api/v1/auth/logout` com o mesmo cabeçalho
+`Authorization`. O token usado é revogado no PostgreSQL e deixa de ser aceito
+imediatamente; outros tokens do mesmo usuário continuam válidos. A tabela guarda
+apenas o hash SHA-256 do token, e os registros vencidos são removidos diariamente.
+Não há refresh token: uma nova sessão exige novo login. Essa escolha mantém a
+revogação simples e evita criar credenciais de longa duração sem necessidade.
+
+## Matriz de acesso (HU01–HU03)
+
+A [matriz endpoint × perfil padrão](docs/matriz-acesso.md) detalha os sete
+perfis; a tabela abaixo mostra as permissões exigidas por operação.
+
+| Endpoint | Permissão | ADMIN | Outros perfis (padrão) |
+| --- | --- | --- | --- |
+| `POST /api/v1/auth/login` | Pública | Sim | Sim |
+| `GET /api/v1/auth/me`, `POST /api/v1/auth/logout` | Autenticado | Sim | Sim |
+| `GET /api/v1/users`, `GET /api/v1/users/{id}` | `USERS_READ` | Sim | Não |
+| `POST /api/v1/users`, `PUT /api/v1/users/{id}`, `DELETE /api/v1/users/{id}` | `USERS_WRITE` | Sim | Não |
+| `GET /api/v1/sectors`, `GET /api/v1/sectors/{id}` | `SECTORS_READ` | Sim | Sim |
+| `POST /api/v1/sectors`, `PUT /api/v1/sectors/{id}`, `DELETE /api/v1/sectors/{id}` | `SECTORS_WRITE` | Sim | Não |
+| `GET /api/v1/roles/permissions`, `GET /api/v1/roles/{role}/permissions` | `PERMISSIONS_READ` | Sim | Não |
+| `PUT /api/v1/roles/{role}/permissions` | `PERMISSIONS_WRITE` | Sim | Não |
+
+`ADMIN` sempre possui todas as permissões; sua configuração é imutável para
+impedir a perda acidental de acesso administrativo. Os outros perfis começam
+somente com `SECTORS_READ`. O administrador pode substituir a lista completa
+de permissões de cada um deles com, por exemplo:
+
+```http
+PUT /api/v1/roles/GESTOR_FROTA/permissions
+Authorization: Bearer <token-admin>
+Content-Type: application/json
+
+{"permissions":["SECTORS_READ","USERS_READ"]}
+```
+
+A alteração passa a valer na próxima requisição, inclusive para tokens já
+emitidos, pois as permissões são relidas do PostgreSQL na autenticação.
+Respostas de erro usam `application/problem+json` com `title`, `status`,
+`detail`, `instance` e `code` (400, 401, 403, 404 e 409).
 
 ## 3. Iniciar o PostgreSQL
 
@@ -231,6 +272,10 @@ Executar os testes do backend:
 ./mvnw test
 ```
 
+Os testes de integração iniciam PostgreSQL isolado por Testcontainers. É preciso
+ter Docker em execução, mas não configurar `.env` nem apontar para o banco de
+desenvolvimento. O mesmo comando roda na CI.
+
 
 ## Migrations do banco
 
@@ -250,6 +295,13 @@ V2__outra_migration.sql
 ```
 
 As migrations não precisam ser executadas manualmente.
+
+A migration `V3` cria índices únicos para e-mails e nomes de setores sem distinguir
+maiúsculas e espaços nas extremidades. Se a base já contiver valores equivalentes,
+é necessário resolver essas duplicatas antes de iniciar a aplicação com a nova
+migration.
+
+A migration `V5` cria a matriz de permissões por perfil e suas permissões padrão.
 
 ## Parar o projeto
 
