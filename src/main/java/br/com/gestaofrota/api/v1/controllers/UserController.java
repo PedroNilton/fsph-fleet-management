@@ -1,12 +1,16 @@
 package br.com.gestaofrota.api.v1.controllers;
 
+import br.com.gestaofrota.api.v1.dtos.requests.ChangePasswordRequest;
 import br.com.gestaofrota.api.v1.dtos.requests.CreateUserRequest;
+import br.com.gestaofrota.api.v1.dtos.requests.UpdateUserPasswordRequest;
 import br.com.gestaofrota.api.v1.dtos.requests.UpdateUserRequest;
 import br.com.gestaofrota.api.v1.dtos.responses.UserResponse;
 import br.com.gestaofrota.application.services.UserService;
+import br.com.gestaofrota.infra.security.models.AuthenticatedUser;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
@@ -61,6 +65,25 @@ public class UserController {
                 request.role(),
                 request.active()
         ));
+    }
+
+    @PatchMapping("/{id}/password")
+    @PreAuthorize("hasAuthority('USERS_WRITE')")
+    public ResponseEntity<Void> changePassword(
+            @PathVariable UUID id,
+            @Valid @RequestBody UpdateUserPasswordRequest request
+    ) {
+        userService.changePassword(id, request.password());
+        return ResponseEntity.noContent().build();
+    }
+
+    @PatchMapping("/me/password")
+    public ResponseEntity<Void> changeOwnPassword(
+            @AuthenticationPrincipal AuthenticatedUser user,
+            @Valid @RequestBody ChangePasswordRequest request
+    ) {
+        userService.changeOwnPassword(user.id(), request.currentPassword(), request.newPassword());
+        return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/{id}")
