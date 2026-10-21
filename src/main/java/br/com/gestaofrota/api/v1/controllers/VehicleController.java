@@ -6,7 +6,7 @@ import br.com.gestaofrota.api.v1.dtos.responses.VehicleResponse;
 import br.com.gestaofrota.domain.enums.VehicleOwner;
 import br.com.gestaofrota.domain.enums.VehicleRole;
 import br.com.gestaofrota.domain.enums.VehicleStatus;
-import br.com.gestaofrota.infra.security.services.VehicleService;
+import br.com.gestaofrota.application.services.VehicleService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;

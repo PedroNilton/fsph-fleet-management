@@ -1,4 +1,4 @@
-package br.com.gestaofrota.infra.security.services;
+package br.com.gestaofrota.application.services;
 
 import br.com.gestaofrota.api.v1.dtos.requests.CreateVehicleRequest;
 import br.com.gestaofrota.api.v1.dtos.requests.UpdateVehicleStatus;
