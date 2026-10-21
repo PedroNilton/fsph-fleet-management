@@ -1,6 +1,7 @@
 package br.com.gestaofrota.application.services;
 
 import br.com.gestaofrota.domain.exceptions.ConflictException;
+import br.com.gestaofrota.domain.exceptions.ResourceNotFoundException;
 import br.com.gestaofrota.domain.enums.UserRole;
 import br.com.gestaofrota.domain.models.Sector;
 import br.com.gestaofrota.domain.models.User;
@@ -76,5 +77,35 @@ class UserServiceTests {
 
         assertDoesNotThrow(() -> userService.deactivate(id));
         verify(userRepository, never()).lockActiveByRole(any());
+    }
+
+    @Test
+    void reactivatesInactiveUser() {
+        UUID id = UUID.randomUUID();
+        User user = new User(new Sector("Financeiro"), "Maria", "maria@exemplo.com", "hash", UserRole.MOTORISTA);
+        user.deactivate();
+        when(userRepository.findById(id)).thenReturn(Optional.of(user));
+
+        userService.reactivate(id);
+
+        assertTrue(user.isActive());
+    }
+
+    @Test
+    void reactivationIsIdempotent() {
+        UUID id = UUID.randomUUID();
+        User user = new User(new Sector("Financeiro"), "Maria", "maria@exemplo.com", "hash", UserRole.MOTORISTA);
+        when(userRepository.findById(id)).thenReturn(Optional.of(user));
+
+        assertDoesNotThrow(() -> userService.reactivate(id));
+        assertTrue(user.isActive());
+    }
+
+    @Test
+    void throwsWhenReactivatingNonExistentUser() {
+        UUID id = UUID.randomUUID();
+        when(userRepository.findById(id)).thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class, () -> userService.reactivate(id));
     }
 }
