@@ -5,6 +5,7 @@ import br.com.gestaofrota.domain.exceptions.ResourceNotFoundException;
 import br.com.gestaofrota.domain.models.Sector;
 import br.com.gestaofrota.infra.repositories.SectorRepository;
 import br.com.gestaofrota.infra.repositories.UserRepository;
+import br.com.gestaofrota.infra.repositories.VehicleRepository;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,10 +18,13 @@ public class SectorService {
 
     private final SectorRepository sectorRepository;
     private final UserRepository userRepository;
+    private final VehicleRepository vehicleRepository;
 
-    public SectorService(SectorRepository sectorRepository, UserRepository userRepository) {
+    public SectorService(SectorRepository sectorRepository, UserRepository userRepository,
+                         VehicleRepository vehicleRepository) {
         this.sectorRepository = sectorRepository;
         this.userRepository = userRepository;
+        this.vehicleRepository = vehicleRepository;
     }
 
     @Transactional(readOnly = true)
@@ -59,6 +63,9 @@ public class SectorService {
         Sector sector = find(id);
         if (userRepository.existsBySectorId(id)) {
             throw new ConflictException("O setor possui usuários vinculados");
+        }
+        if (vehicleRepository.existsBySectorId(id)) {
+            throw new ConflictException("O setor possui veículos vinculados");
         }
         sectorRepository.delete(sector);
     }

@@ -1,9 +1,10 @@
 package br.com.gestaofrota.api.v1.controllers;
 
 import br.com.gestaofrota.api.v1.dtos.requests.CreateDriverRequest;
-import br.com.gestaofrota.api.v1.dtos.requests.UpdateSectorRequest;
+import br.com.gestaofrota.api.v1.dtos.requests.RegisterDriverLicenseRequest;
+import br.com.gestaofrota.api.v1.dtos.responses.DriverLicenseResponse;
 import br.com.gestaofrota.api.v1.dtos.responses.DriverResponse;
-import br.com.gestaofrota.api.v1.dtos.responses.SectorResponse;
+import br.com.gestaofrota.application.services.DriverLicenseService;
 import br.com.gestaofrota.application.services.DriverService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
@@ -15,39 +16,69 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/v1/driver")
+@RequestMapping("/api/v1/drivers")
 public class DriverController {
-    private final DriverService driverService;
 
-    public DriverController(DriverService driverService) {
-        this.driverService = driverService;
+    private final DriverService drivers;
+    private final DriverLicenseService licenses;
+
+    public DriverController(DriverService drivers, DriverLicenseService licenses) {
+        this.drivers = drivers;
+        this.licenses = licenses;
     }
+
     @GetMapping
+    @PreAuthorize("hasAuthority('DRIVERS_READ')")
     public List<DriverResponse> list() {
-            return driverService.list().stream().map(DriverResponse::from).toList();
+        return drivers.list().stream().map(DriverResponse::from).toList();
     }
 
     @GetMapping("/{id}")
-    public DriverResponse find(@PathVariable UUID id){
-        return DriverResponse.from(driverService.findById(id));
+    @PreAuthorize("hasAuthority('DRIVERS_READ')")
+    public DriverResponse find(@PathVariable UUID id) {
+        return DriverResponse.from(drivers.find(id));
     }
 
     @PostMapping
-    public ResponseEntity<DriverResponse> create(@RequestBody CreateDriverRequest request){
-        DriverResponse response = DriverResponse.from(driverService.create(request.user(),request.license_number(),request.status()));
-        return ResponseEntity.created(URI.create("/api/v1/driver/" + response.id())).body(response);
-    }
-
-    @PutMapping("/{id}")
-    public DriverResponse update(@PathVariable UUID id, @RequestBody CreateDriverRequest request) {
-        return DriverResponse.from(driverService.update(id, request.user(),request.license_number(),request.status()));
+    @PreAuthorize("hasAuthority('DRIVERS_WRITE')")
+    public ResponseEntity<DriverResponse> create(@Valid @RequestBody CreateDriverRequest request) {
+        DriverResponse result = DriverResponse.from(drivers.create(request.userId()));
+        return ResponseEntity.created(URI.create("/api/v1/drivers/" + result.id())).body(result);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable UUID id) {
-        driverService.delete(id);
+    @PreAuthorize("hasAuthority('DRIVERS_WRITE')")
+    public ResponseEntity<Void> deactivate(@PathVariable UUID id) {
+        drivers.deactivate(id);
         return ResponseEntity.noContent().build();
     }
 
+    @GetMapping("/{id}/licenses")
+    @PreAuthorize("hasAuthority('DRIVERS_READ')")
+    public List<DriverLicenseResponse> listLicenses(@PathVariable UUID id) {
+        return licenses.list(id).stream().map(DriverLicenseResponse::from).toList();
+    }
 
+    @GetMapping("/{id}/licenses/{licenseId}")
+    @PreAuthorize("hasAuthority('DRIVERS_READ')")
+    public DriverLicenseResponse findLicense(@PathVariable UUID id, @PathVariable UUID licenseId) {
+        return DriverLicenseResponse.from(licenses.find(id, licenseId));
+    }
+
+    @PostMapping("/{id}/licenses")
+    @PreAuthorize("hasAuthority('DRIVERS_WRITE')")
+    public ResponseEntity<DriverLicenseResponse> registerLicense(
+            @PathVariable UUID id, @Valid @RequestBody RegisterDriverLicenseRequest request
+    ) {
+        DriverLicenseResponse result = DriverLicenseResponse.from(licenses.register(
+                id,
+                request.licenseNumber(),
+                request.category(),
+                request.issuedOn(),
+                request.expiresOn()
+            )
+        );
+
+        return ResponseEntity.created(URI.create("/api/v1/drivers/" + id + "/licenses/" + result.id())).body(result);
+    }
 }

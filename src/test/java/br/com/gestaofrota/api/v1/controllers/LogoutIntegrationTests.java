@@ -80,6 +80,7 @@ class LogoutIntegrationTests extends PostgresIntegrationTest {
                 passwordEncoder.encode("senha-de-teste"), UserRole.GESTOR_FROTA));
         String gestorToken = login(email, "senha-de-teste");
 
+        Set<Permission> originalPermissions = rolePermissionService.find(UserRole.GESTOR_FROTA);
         rolePermissionService.replace(UserRole.GESTOR_FROTA, Set.of(Permission.SECTORS_READ));
         try {
             mockMvc.perform(get("/api/v1/sectors").header(HttpHeaders.AUTHORIZATION, "Bearer " + gestorToken))
@@ -103,7 +104,7 @@ class LogoutIntegrationTests extends PostgresIntegrationTest {
                             .content("{\"permissions\":[]}"))
                     .andExpect(status().isConflict());
         } finally {
-            rolePermissionService.replace(UserRole.GESTOR_FROTA, Set.of(Permission.SECTORS_READ));
+            rolePermissionService.replace(UserRole.GESTOR_FROTA, originalPermissions);
         }
     }
 

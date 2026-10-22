@@ -1,9 +1,12 @@
 package br.com.gestaofrota.application.services;
 
-import br.com.gestaofrota.domain.enums.DriverStatus;
+import br.com.gestaofrota.domain.enums.UserRole;
+import br.com.gestaofrota.domain.exceptions.ConflictException;
+import br.com.gestaofrota.domain.exceptions.ResourceNotFoundException;
 import br.com.gestaofrota.domain.models.Driver;
 import br.com.gestaofrota.domain.models.User;
 import br.com.gestaofrota.infra.repositories.DriverRepository;
+import br.com.gestaofrota.infra.repositories.UserRepository;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,50 +16,43 @@ import java.util.UUID;
 
 @Service
 public class DriverService {
-    private final DriverRepository driverRepository;
 
+    private final DriverRepository drivers;
+    private final UserRepository users;
 
-    public DriverService(DriverRepository driverRepository) {
-        this.driverRepository = driverRepository;
-    }
-
-    @Transactional
-    public Driver create(User user, String license_number, DriverStatus status){
-        Driver driver = new Driver(user,license_number,status);
-        return driverRepository.save(driver);
+    public DriverService(DriverRepository drivers, UserRepository users) {
+        this.drivers = drivers;
+        this.users = users;
     }
 
     @Transactional(readOnly = true)
-    public List<Driver> list() {
-        return driverRepository.findAll(Sort.by(Sort.Direction.ASC, "name"));
+    public List<Driver> list() { return drivers.findAll(Sort.by("id")); }
+
+    @Transactional(readOnly = true)
+    public Driver find(UUID id) {
+        return drivers.findById(id).orElseThrow(() -> new ResourceNotFoundException("Motorista", id));
     }
 
     @Transactional
-    public void delete(UUID id){
-        Driver driver = findById(id);
-        driverRepository.delete(driver);
+    public Driver create(UUID userId) {
+        User user = users.findById(userId).orElseThrow(
+                () -> new ResourceNotFoundException("Usuário", userId)
+        );
+
+        if (!user.isActive() || user.getRole() != UserRole.MOTORISTA) {
+            throw new ConflictException("O usuário deve estar ativo e possuir perfil MOTORISTA");
+
+        }
+        if (drivers.existsByUserId(userId)) {
+            throw new ConflictException("Este usuário já possui cadastro de motorista");
+
+        }
+        return drivers.save(new Driver(user));
     }
 
     @Transactional
-    public Driver findById(UUID id){
-        Driver driver = driverRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Motorista não encontrado"));
-        return driver;
+    public void deactivate(UUID id) {
+        Driver driver = find(id);
+        driver.deactivate();
     }
-    @Transactional
-    public Driver update(UUID id, User user, String license_number, DriverStatus status){
-        Driver driver = findById(id);
-
-        driver.setUser(user);
-        driver.setLicense_number(license_number);
-        driver.setStatus(status);
-        return driverRepository.save(driver);
-    }
-
-
-
-
-
-
-
 }

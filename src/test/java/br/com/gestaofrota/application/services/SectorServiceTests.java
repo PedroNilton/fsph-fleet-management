@@ -4,6 +4,7 @@ import br.com.gestaofrota.domain.exceptions.ConflictException;
 import br.com.gestaofrota.domain.models.Sector;
 import br.com.gestaofrota.infra.repositories.SectorRepository;
 import br.com.gestaofrota.infra.repositories.UserRepository;
+import br.com.gestaofrota.infra.repositories.VehicleRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -25,6 +26,9 @@ class SectorServiceTests {
     @Mock
     private UserRepository userRepository;
 
+    @Mock
+    private VehicleRepository vehicleRepository;
+
     @InjectMocks
     private SectorService sectorService;
 
@@ -42,6 +46,16 @@ class SectorServiceTests {
         Sector sector = new Sector("Financeiro");
         when(sectorRepository.findById(id)).thenReturn(Optional.of(sector));
         when(userRepository.existsBySectorId(id)).thenReturn(true);
+
+        assertThrows(ConflictException.class, () -> sectorService.delete(id));
+        verify(sectorRepository, never()).delete(any());
+    }
+
+    @Test
+    void rejectsDeletionWhenSectorHasVehicles() {
+        UUID id = UUID.randomUUID();
+        when(sectorRepository.findById(id)).thenReturn(Optional.of(new Sector("Financeiro")));
+        when(vehicleRepository.existsBySectorId(id)).thenReturn(true);
 
         assertThrows(ConflictException.class, () -> sectorService.delete(id));
         verify(sectorRepository, never()).delete(any());

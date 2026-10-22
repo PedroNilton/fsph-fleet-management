@@ -1,116 +1,99 @@
-
 package br.com.gestaofrota.application.services;
 
-import br.com.gestaofrota.api.v1.dtos.requests.CreateVehicleRequest;
-import br.com.gestaofrota.api.v1.dtos.requests.UpdateVehicleStatus;
-import br.com.gestaofrota.api.v1.dtos.responses.VehicleResponse;
-import br.com.gestaofrota.domain.enums.VehicleStatus;
+import br.com.gestaofrota.domain.exceptions.ConflictException;
+import br.com.gestaofrota.domain.exceptions.InvalidRequestException;
+import br.com.gestaofrota.domain.exceptions.ResourceNotFoundException;
 import br.com.gestaofrota.domain.models.Sector;
 import br.com.gestaofrota.domain.models.Vehicle;
 import br.com.gestaofrota.infra.repositories.SectorRepository;
 import br.com.gestaofrota.infra.repositories.VehicleRepository;
-import jakarta.persistence.EntityNotFoundException;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.UUID;
 
 @Service
 public class VehicleService {
 
-    private final VehicleRepository vehicleRepository;
-    private final SectorRepository sectorRepository;
+    private final VehicleRepository vehicles;
+    private final SectorRepository sectors;
 
-    public VehicleService(
-            VehicleRepository vehicleRepository,
-            SectorRepository sectorRepository
-    ) {
-        this.vehicleRepository = vehicleRepository;
-        this.sectorRepository = sectorRepository;
+    public VehicleService(VehicleRepository vehicles, SectorRepository sectors) {
+        this.vehicles = vehicles;
+        this.sectors = sectors;
+    }
+
+    @Transactional(readOnly = true)
+    public List<Vehicle> list() { return vehicles.findAll(Sort.by("plate")); }
+
+    @Transactional(readOnly = true)
+    public Vehicle find(UUID id) {
+        return vehicles.findById(id).orElseThrow(() -> new ResourceNotFoundException("Veículo", id));
     }
 
     @Transactional
-    public VehicleResponse create(CreateVehicleRequest request) {
+    public Vehicle create(UUID sectorId, String plate, String model, int capacity, String usageType, long odometerKm) {
+        String normalizedPlate = normalizePlate(plate);
 
-        // Busca o setor informado na requisição
-        Sector sector = sectorRepository.findById(request.sectorId())
-                .orElseThrow(() ->
-                        new EntityNotFoundException(
-                                "Setor não encontrado: " + request.sectorId()
-                        )
-                );
+        if (vehicles.existsByPlateIgnoreCase(normalizedPlate)) {
+            throw new ConflictException("Já existe um veículo com esta placa");
+        }
 
-        // Cria a entidade e preenche os dados
-        Vehicle vehicle = new Vehicle();
-        vehicle.setSector(sector);
-        vehicle.setPlate(request.plate());
-        vehicle.setModel(request.model());
-        vehicle.setCapacity(request.capacity());
-        vehicle.setCurrentMileage(request.currentMileage());
-        vehicle.setStatus(request.status());
-
-        Vehicle savedVehicle = vehicleRepository.save(vehicle);
-
-        return VehicleResponse.from(savedVehicle);
+        return vehicles.save(new Vehicle(
+                findSector(sectorId),
+                normalizedPlate,
+                model.trim(),
+                capacity,
+                usageType.trim(),
+                odometerKm
+            )
+        );
     }
 
     @Transactional
-    public VehicleResponse updateStatus(
-            UUID id,
-            UpdateVehicleStatus request
-    ) {
-        Vehicle vehicle = vehicleRepository.findById(id)
-                .orElseThrow(() ->
-                        new EntityNotFoundException(
-                                "Veículo não encontrado: " + id
-                        )
-                );
+    public Vehicle update(UUID id, UUID sectorId, String plate, String model, int capacity, String usageType, long odometerKm) {
+        Vehicle vehicle = find(id);
 
-        vehicle.setStatus(request.status());
+        if (!vehicle.isActive()) {
+            throw new ConflictException("Veículo inativo não pode ser alterado");
+        }
 
-        Vehicle updatedVehicle = vehicleRepository.save(vehicle);
+        if (odometerKm < vehicle.getCurrentOdometerKm()) {
+            throw new ConflictException("A quilometragem não pode ser menor que a atual");
+        }
 
-        return VehicleResponse.from(updatedVehicle);
+        String normalizedPlate = normalizePlate(plate);
+
+        if (vehicles.existsByPlateIgnoreCaseAndIdNot(normalizedPlate, id)) {
+            throw new ConflictException("Já existe um veículo com esta placa");
+        }
+
+        vehicle.update(findSector(sectorId), normalizedPlate, model.trim(), capacity, usageType.trim(), odometerKm);
+        return vehicle;
     }
 
-    @Transactional(readOnly = true)
-    public VehicleResponse findById(UUID id) {
-        Vehicle vehicle = vehicleRepository.findById(id)
-                .orElseThrow(() ->
-                        new EntityNotFoundException(
-                                "Veículo não encontrado: " + id
-                        )
-                );
-
-        return VehicleResponse.from(vehicle);
+    @Transactional
+    public void deactivate(UUID id) {
+        Vehicle vehicle = find(id);
+        vehicle.deactivate();
     }
 
-    @Transactional(readOnly = true)
-    public VehicleResponse findByPlate(String plate) {
-        Vehicle vehicle = vehicleRepository.findByPlate(plate)
-                .orElseThrow(() ->
-                        new EntityNotFoundException(
-                                "Veículo não encontrado com a placa: " + plate
-                        )
-                );
+    private Sector findSector(UUID id) {
+        if (id == null) return null;
 
-        return VehicleResponse.from(vehicle);
+        return sectors.findById(id).orElseThrow(() -> new ResourceNotFoundException("Setor", id));
     }
 
-    @Transactional(readOnly = true)
-    public List<VehicleResponse> findAll() {
-        return vehicleRepository.findAll()
-                .stream()
-                .map(VehicleResponse::from)
-                .toList();
-    }
+    private String normalizePlate(String plate) {
+        String normalized = plate.trim().replace("-", "").toUpperCase(Locale.ROOT);
 
-    @Transactional(readOnly = true)
-    public List<VehicleResponse> findByStatus(VehicleStatus status) {
-        return vehicleRepository.findByStatus(status)
-                .stream()
-                .map(VehicleResponse::from)
-                .toList();
+        if (!normalized.matches("[A-Z0-9]{7,10}")) {
+            throw new InvalidRequestException("Placa deve conter de 7 a 10 letras ou números");
+
+        }
+        return normalized;
     }
 }

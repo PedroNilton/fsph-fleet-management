@@ -3,22 +3,24 @@ package br.com.gestaofrota.domain.models;
 
 import br.com.gestaofrota.domain.enums.VehicleStatus;
 import jakarta.persistence.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
+import java.time.Instant;
 import java.util.UUID;
 
 @Entity
 @Table(name = "vehicles")
 public class Vehicle {
-
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "sector_id", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "sector_id")
     private Sector sector;
 
-    @Column(nullable = false, length = 150)
+    @Column(nullable = false, length = 10)
     private String plate;
 
     @Column(nullable = false, length = 150)
@@ -27,79 +29,89 @@ public class Vehicle {
     @Column(nullable = false)
     private int capacity;
 
+    @Column(name = "usage_type", nullable = false, length = 50)
+    private String usageType;
+
+    @Column(name = "current_odometer_km", nullable = false)
+    private long currentOdometerKm;
+
+    @Column(name = "is_active", nullable = false)
+    private boolean active = true;
+
+    @Version
     @Column(nullable = false)
-    private int current_mileage;
+    private long version;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 150)
-    private VehicleStatus status;
+    @CreationTimestamp
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private Instant createdAt;
 
-    public Vehicle() {
+    @UpdateTimestamp
+    @Column(name = "updated_at", nullable = false)
+    private Instant updatedAt;
+
+    protected Vehicle() {
     }
 
-    public Vehicle(UUID id, Sector sector, String plate, String model, int capacity, int current_mileage, VehicleStatus status) {
-        this.id = id;
+    public Vehicle(Sector sector, String plate, String model, int capacity, String usageType, long currentOdometerKm) {
         this.sector = sector;
         this.plate = plate;
         this.model = model;
         this.capacity = capacity;
-        this.current_mileage = current_mileage;
-        this.status = status;
+        this.usageType = usageType;
+        this.currentOdometerKm = currentOdometerKm;
     }
 
     public UUID getId() {
         return id;
     }
 
-    public void setId(UUID id) {
-        this.id = id;
-    }
-
     public Sector getSector() {
         return sector;
-    }
-
-    public void setSector(Sector sector) {
-        this.sector = sector;
     }
 
     public String getPlate() {
         return plate;
     }
 
-    public void setPlate(String plate) {
-        this.plate = plate;
-    }
-
     public String getModel() {
         return model;
-    }
-
-    public void setModel(String model) {
-        this.model = model;
     }
 
     public int getCapacity() {
         return capacity;
     }
 
-    public void setCapacity(int capacity) {
+    public String getUsageType() {
+        return usageType;
+    }
+
+    public long getCurrentOdometerKm() {
+        return currentOdometerKm;
+    }
+
+    public boolean isActive() {
+        return active;
+    }
+
+    public Instant getCreatedAt() {
+        return createdAt;
+    }
+
+    public Instant getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void update(Sector sector, String plate, String model, int capacity, String usageType, long currentOdometerKm) {
+        this.sector = sector;
+        this.plate = plate;
+        this.model = model;
         this.capacity = capacity;
+        this.usageType = usageType;
+        this.currentOdometerKm = currentOdometerKm;
     }
 
-    public int getCurrent_mileage() {
-        return current_mileage;
-    }
-
-    public void setCurrent_mileage(int current_mileage) {
-        this.current_mileage = current_mileage;
-    }
-
-    public VehicleStatus getStatus() {
-        return status;
-    }
-
-    public void setStatus(VehicleStatus status) {
-        this.status = status;
+    public void deactivate() {
+        this.active = false;
     }
 }

@@ -6,5 +6,4 @@ import jakarta.validation.constraints.NotNull;
 public record UpdateVehicleStatus(
         @NotNull VehicleStatus status
 ) {
-
 }

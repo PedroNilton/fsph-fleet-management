@@ -1,9 +1,14 @@
 package br.com.gestaofrota.infra.repositories;
 
 
-import br.com.gestaofrota.domain.enums.VehicleStatus;
 import br.com.gestaofrota.domain.models.Vehicle;
+import jakarta.persistence.LockModeType;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Optional;
@@ -11,16 +16,25 @@ import java.util.UUID;
 
 public interface VehicleRepository extends JpaRepository<Vehicle, UUID> {
 
-    Optional<Vehicle> findByPlate(String plate); //achar por placa
+    Optional<Vehicle> findByPlate(String plate);
 
-    List<Vehicle> findByStatus(VehicleStatus status); // Listar veiculos por status
-
-    // List<Vehicle> findByOwner(VehicleOwner owner); // Listar por propiedade
-   // List<Vehicle> findByOwnerAndStatus(VehicleOwner owner, VehicleStatus status); // Listar veiculos por status e propiedade
-
-   // List<Vehicle> findByRole(VehicleRole role); // listar por tipo de veiculo
-    List<Vehicle> findByCapacity (int capacity); // listar por vagas disponiveis em cada carro
+    List<Vehicle> findByCapacity (int capacity);
 
 
+    @Override
+    @EntityGraph(attributePaths = "sector")
+    List<Vehicle> findAll(Sort sort);
+
+    @Override
+    @EntityGraph(attributePaths = "sector")
+    Optional<Vehicle> findById(UUID id);
+
+    boolean existsByPlateIgnoreCase(String plate);
+    boolean existsByPlateIgnoreCaseAndIdNot(String plate, UUID id);
+    boolean existsBySectorId(UUID sectorId);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("select vehicle from Vehicle vehicle where vehicle.id = :id")
+    Optional<Vehicle> lockById(@Param("id") UUID id);
 
 }

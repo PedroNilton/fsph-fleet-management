@@ -72,7 +72,13 @@ class UserRolePersistenceIntegrationTests extends PostgresIntegrationTest {
                 .containsExactlyInAnyOrderElementsOf(EnumSet.allOf(Permission.class));
         for (UserRole role : UserRole.values()) {
             if (role != UserRole.ADMIN) {
-                assertThat(rolePermissionService.find(role)).isEqualTo(Set.of(Permission.SECTORS_READ));
+                Set<Permission> expected = switch (role) {
+                    case GESTOR_FROTA -> Set.of(Permission.SECTORS_READ, Permission.VEHICLES_READ,
+                            Permission.VEHICLES_WRITE, Permission.DRIVERS_READ, Permission.DRIVERS_WRITE);
+                    case MOTORISTA -> Set.of(Permission.SECTORS_READ, Permission.VEHICLES_READ);
+                    default -> Set.of(Permission.SECTORS_READ);
+                };
+                assertThat(rolePermissionService.find(role)).isEqualTo(expected);
             }
         }
     }

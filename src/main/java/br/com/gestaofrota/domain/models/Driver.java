@@ -1,13 +1,15 @@
 package br.com.gestaofrota.domain.models;
 
-import br.com.gestaofrota.domain.enums.DriverStatus;
 import jakarta.persistence.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
+import java.time.Instant;
 import java.util.UUID;
 
 @Entity
 @Table(name = "drivers")
-public class Driver{
+public class Driver {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -17,55 +19,49 @@ public class Driver{
     @JoinColumn(name = "user_id", nullable = false, unique = true)
     private User user;
 
-    @Column(nullable = false, length = 20)
-    private String license_number;
+    @Column(name = "is_active", nullable = false)
+    private boolean active = true;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 150)
-    private DriverStatus status;
+    @Version
+    @Column(nullable = false)
+    private long version;
 
-    public Driver(UUID id, User user, String license_number, DriverStatus status) {
-        this.id = id;
+    @CreationTimestamp
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private Instant createdAt;
+
+    @UpdateTimestamp
+    @Column(name = "updated_at", nullable = false)
+    private Instant updatedAt;
+
+    protected Driver() {
+    }
+
+    public Driver(User user) {
         this.user = user;
-        this.license_number = license_number;
-        this.status = status;
-    }
-
-    public Driver() {
-    }
-
-    public Driver(User user, String licenseNumber, DriverStatus status) {
     }
 
     public UUID getId() {
         return id;
     }
 
-    public void setId(UUID id) {
-        this.id = id;
-    }
-
     public User getUser() {
         return user;
     }
 
-    public void setUser(User user) {
-        this.user = user;
+    public boolean isActive() {
+        return active;
     }
 
-    public String getLicense_number() {
-        return license_number;
+    public Instant getCreatedAt() {
+        return createdAt;
     }
 
-    public void setLicense_number(String license_number) {
-        this.license_number = license_number;
+    public Instant getUpdatedAt() {
+        return updatedAt;
     }
 
-    public DriverStatus getStatus() {
-        return status;
-    }
-
-    public void setStatus(DriverStatus status) {
-        this.status = status;
+    public void deactivate() {
+        this.active = false;
     }
 }
