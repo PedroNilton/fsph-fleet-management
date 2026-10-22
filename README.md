@@ -74,70 +74,6 @@ do setor com `ADMIN_SECTOR_NAME`. Inicializações posteriores não duplicam o u
 
 > O arquivo `.env` contém informações locais e não deve ser enviado ao Git.
 
-## Autenticação
-
-Envie as credenciais do administrador para obter um token:
-
-```http
-POST /api/v1/auth/login
-Content-Type: application/json
-
-{
-  "email": "admin@exemplo.com",
-  "password": "admin_senha"
-}
-```
-
-Nas rotas protegidas, envie o token retornado no cabeçalho:
-
-```http
-Authorization: Bearer <token>
-```
-
-Login, health check e documentação Swagger são públicos. As rotas de negócio
-exigem um JWT válido e a permissão indicada na matriz abaixo.
-
-Para encerrar a sessão, envie `POST /api/v1/auth/logout` com o mesmo cabeçalho
-`Authorization`. O token usado é revogado no PostgreSQL e deixa de ser aceito
-imediatamente; outros tokens do mesmo usuário continuam válidos. A tabela guarda
-apenas o hash SHA-256 do token, e os registros vencidos são removidos diariamente.
-Não há refresh token: uma nova sessão exige novo login. Essa escolha mantém a
-revogação simples e evita criar credenciais de longa duração sem necessidade.
-
-## Matriz de acesso (HU01–HU03)
-
-A tabela abaixo resume as permissões exigidas por operação e o acesso inicial
-dos perfis.
-
-| Endpoint | Permissão | ADMIN | Outros perfis (padrão) |
-| --- | --- | --- | --- |
-| `POST /api/v1/auth/login` | Pública | Sim | Sim |
-| `GET /api/v1/auth/me`, `POST /api/v1/auth/logout` | Autenticado | Sim | Sim |
-| `GET /api/v1/users`, `GET /api/v1/users/{id}` | `USERS_READ` | Sim | Não |
-| `POST /api/v1/users`, `PUT /api/v1/users/{id}`, `DELETE /api/v1/users/{id}` | `USERS_WRITE` | Sim | Não |
-| `GET /api/v1/sectors`, `GET /api/v1/sectors/{id}` | `SECTORS_READ` | Sim | Sim |
-| `POST /api/v1/sectors`, `PUT /api/v1/sectors/{id}`, `DELETE /api/v1/sectors/{id}` | `SECTORS_WRITE` | Sim | Não |
-| `GET /api/v1/roles/permissions`, `GET /api/v1/roles/{role}/permissions` | `PERMISSIONS_READ` | Sim | Não |
-| `PUT /api/v1/roles/{role}/permissions` | `PERMISSIONS_WRITE` | Sim | Não |
-
-`ADMIN` sempre possui todas as permissões; sua configuração é imutável para
-impedir a perda acidental de acesso administrativo. Os outros perfis começam
-somente com `SECTORS_READ`. O administrador pode substituir a lista completa
-de permissões de cada um deles com, por exemplo:
-
-```http
-PUT /api/v1/roles/GESTOR_FROTA/permissions
-Authorization: Bearer <token-admin>
-Content-Type: application/json
-
-{"permissions":["SECTORS_READ","USERS_READ"]}
-```
-
-A alteração passa a valer na próxima requisição, inclusive para tokens já
-emitidos, pois as permissões são relidas do PostgreSQL na autenticação.
-Respostas de erro usam `application/problem+json` com `title`, `status`,
-`detail`, `instance` e `code` (400, 401, 403, 404 e 409).
-
 ## 3. Iniciar o PostgreSQL
 
 Ainda na raiz do projeto, execute:
@@ -227,55 +163,6 @@ set +a
 
 ./mvnw spring-boot:run
 ```
-
-## Comandos úteis
-
-Ver o estado dos serviços:
-
-```bash
-docker compose ps
-```
-
-Ver em qual porta o PostgreSQL está publicado:
-
-```bash
-docker compose port postgres 5432
-```
-
-Verificar se a porta `5432` está sendo utilizada:
-
-```bash
-sudo ss -ltnp | grep ':5432'
-```
-
-Acompanhar os logs do PostgreSQL:
-
-```bash
-docker compose logs -f postgres
-```
-
-Entrar no banco pelo terminal:
-
-```bash
-docker compose exec postgres psql -U gestao_frotas -d gestao_frotas
-```
-
-Sair do PostgreSQL:
-
-```text
-\q
-```
-
-Executar os testes do backend:
-
-```bash
-./mvnw test
-```
-
-Os testes de integração iniciam PostgreSQL isolado por Testcontainers. É preciso
-ter Docker em execução, mas não configurar `.env` nem apontar para o banco de
-desenvolvimento. O mesmo comando roda na CI.
-
 
 ## Migrations do banco
 
