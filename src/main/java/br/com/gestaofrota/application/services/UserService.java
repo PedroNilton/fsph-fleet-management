@@ -8,6 +8,7 @@ import br.com.gestaofrota.domain.models.User;
 import br.com.gestaofrota.infra.repositories.SectorRepository;
 import br.com.gestaofrota.infra.repositories.UserRepository;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -82,6 +83,21 @@ public class UserService {
             user.changePassword(passwordEncoder.encode(password));
         }
         return user;
+    }
+
+    @Transactional
+    public void changePassword(UUID id, String newPassword) {
+        User user = find(id);
+        user.changePassword(passwordEncoder.encode(newPassword));
+    }
+
+    @Transactional
+    public void changeOwnPassword(UUID id, String currentPassword, String newPassword) {
+        User user = find(id);
+        if (!passwordEncoder.matches(currentPassword, user.getPassword())) {
+            throw new BadCredentialsException("Senha atual incorreta");
+        }
+        user.changePassword(passwordEncoder.encode(newPassword));
     }
 
     @Transactional
