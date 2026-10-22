@@ -1,7 +1,6 @@
 package br.com.gestaofrota.domain.models;
 
-import br.com.gestaofrota.domain.enums.VehicleOwner;
-import br.com.gestaofrota.domain.enums.VehicleRole;
+
 import br.com.gestaofrota.domain.enums.VehicleStatus;
 import jakarta.persistence.*;
 
@@ -15,41 +14,36 @@ public class Vehicle {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "sector_id", nullable = false)
+    private Sector sector;
+
     @Column(nullable = false, length = 150)
     private String plate;
 
     @Column(nullable = false, length = 150)
     private String model;
 
-    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private VehicleRole role;
+    private int capacity;
 
-    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private VehicleOwner owner;
+    private int current_mileage;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 150)
     private VehicleStatus status;
 
-    @Column(nullable = false)
-    private int availableSeats;
-
-    public Vehicle(UUID id, String plate, String model, VehicleRole role, VehicleOwner owner, VehicleStatus status, int availableSeats) {
-        this.id = id;
-        this.plate = plate;
-        this.model = model;
-        this.role = role;
-        this.owner = owner;
-        this.status = status;
-        this.availableSeats = availableSeats;
-    }
-
     public Vehicle() {
     }
 
-    public void changeStatus(VehicleStatus status){
+    public Vehicle(UUID id, Sector sector, String plate, String model, int capacity, int current_mileage, VehicleStatus status) {
+        this.id = id;
+        this.sector = sector;
+        this.plate = plate;
+        this.model = model;
+        this.capacity = capacity;
+        this.current_mileage = current_mileage;
         this.status = status;
     }
 
@@ -59,6 +53,14 @@ public class Vehicle {
 
     public void setId(UUID id) {
         this.id = id;
+    }
+
+    public Sector getSector() {
+        return sector;
+    }
+
+    public void setSector(Sector sector) {
+        this.sector = sector;
     }
 
     public String getPlate() {
@@ -77,20 +79,20 @@ public class Vehicle {
         this.model = model;
     }
 
-    public VehicleRole getRole() {
-        return role;
+    public int getCapacity() {
+        return capacity;
     }
 
-    public void setRole(VehicleRole role) {
-        this.role = role;
+    public void setCapacity(int capacity) {
+        this.capacity = capacity;
     }
 
-    public VehicleOwner getOwner() {
-        return owner;
+    public int getCurrent_mileage() {
+        return current_mileage;
     }
 
-    public void setOwner(VehicleOwner owner) {
-        this.owner = owner;
+    public void setCurrent_mileage(int current_mileage) {
+        this.current_mileage = current_mileage;
     }
 
     public VehicleStatus getStatus() {
@@ -99,13 +101,5 @@ public class Vehicle {
 
     public void setStatus(VehicleStatus status) {
         this.status = status;
-    }
-
-    public int getAvailableSeats() {
-        return availableSeats;
-    }
-
-    public void setAvailableSeats(int availableSeats) {
-        this.availableSeats = availableSeats;
     }
 }

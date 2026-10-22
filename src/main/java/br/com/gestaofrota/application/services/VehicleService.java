@@ -1,12 +1,13 @@
+
 package br.com.gestaofrota.application.services;
 
 import br.com.gestaofrota.api.v1.dtos.requests.CreateVehicleRequest;
 import br.com.gestaofrota.api.v1.dtos.requests.UpdateVehicleStatus;
 import br.com.gestaofrota.api.v1.dtos.responses.VehicleResponse;
-import br.com.gestaofrota.domain.enums.VehicleOwner;
-import br.com.gestaofrota.domain.enums.VehicleRole;
 import br.com.gestaofrota.domain.enums.VehicleStatus;
+import br.com.gestaofrota.domain.models.Sector;
 import br.com.gestaofrota.domain.models.Vehicle;
+import br.com.gestaofrota.infra.repositories.SectorRepository;
 import br.com.gestaofrota.infra.repositories.VehicleRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
@@ -19,22 +20,35 @@ import java.util.UUID;
 public class VehicleService {
 
     private final VehicleRepository vehicleRepository;
+    private final SectorRepository sectorRepository;
 
-    public VehicleService(VehicleRepository vehicleRepository) {
+    public VehicleService(
+            VehicleRepository vehicleRepository,
+            SectorRepository sectorRepository
+    ) {
         this.vehicleRepository = vehicleRepository;
+        this.sectorRepository = sectorRepository;
     }
 
     @Transactional
     public VehicleResponse create(CreateVehicleRequest request) {
-        Vehicle vehicle = new Vehicle(
-                null,
-                request.plate(),
-                request.model(),
-                request.role(),
-                request.owner(),
-                request.status(),
-                request.availableSeats()
-        );
+
+        // Busca o setor informado na requisição
+        Sector sector = sectorRepository.findById(request.sectorId())
+                .orElseThrow(() ->
+                        new EntityNotFoundException(
+                                "Setor não encontrado: " + request.sectorId()
+                        )
+                );
+
+        // Cria a entidade e preenche os dados
+        Vehicle vehicle = new Vehicle();
+        vehicle.setSector(sector);
+        vehicle.setPlate(request.plate());
+        vehicle.setModel(request.model());
+        vehicle.setCapacity(request.capacity());
+        vehicle.setCurrentMileage(request.currentMileage());
+        vehicle.setStatus(request.status());
 
         Vehicle savedVehicle = vehicleRepository.save(vehicle);
 
@@ -53,7 +67,7 @@ public class VehicleService {
                         )
                 );
 
-        vehicle.changeStatus(request.status());
+        vehicle.setStatus(request.status());
 
         Vehicle updatedVehicle = vehicleRepository.save(vehicle);
 
@@ -95,41 +109,6 @@ public class VehicleService {
     @Transactional(readOnly = true)
     public List<VehicleResponse> findByStatus(VehicleStatus status) {
         return vehicleRepository.findByStatus(status)
-                .stream()
-                .map(VehicleResponse::from)
-                .toList();
-    }
-
-    @Transactional(readOnly = true)
-    public List<VehicleResponse> findByOwner(VehicleOwner owner) {
-        return vehicleRepository.findByOwner(owner)
-                .stream()
-                .map(VehicleResponse::from)
-                .toList();
-    }
-
-    @Transactional(readOnly = true)
-    public List<VehicleResponse> findByOwnerAndStatus(
-            VehicleOwner owner,
-            VehicleStatus status
-    ) {
-        return vehicleRepository.findByOwnerAndStatus(owner, status)
-                .stream()
-                .map(VehicleResponse::from)
-                .toList();
-    }
-
-    @Transactional(readOnly = true)
-    public List<VehicleResponse> findByRole(VehicleRole role) {
-        return vehicleRepository.findByRole(role)
-                .stream()
-                .map(VehicleResponse::from)
-                .toList();
-    }
-
-    @Transactional(readOnly = true)
-    public List<VehicleResponse> findByAvailableSeats(int availableSeats) {
-        return vehicleRepository.findByAvailableSeats(availableSeats)
                 .stream()
                 .map(VehicleResponse::from)
                 .toList();

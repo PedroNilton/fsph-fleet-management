@@ -1,12 +1,11 @@
+
 package br.com.gestaofrota.api.v1.controllers;
 
 import br.com.gestaofrota.api.v1.dtos.requests.CreateVehicleRequest;
 import br.com.gestaofrota.api.v1.dtos.requests.UpdateVehicleStatus;
 import br.com.gestaofrota.api.v1.dtos.responses.VehicleResponse;
-import br.com.gestaofrota.domain.enums.VehicleOwner;
-import br.com.gestaofrota.domain.enums.VehicleRole;
-import br.com.gestaofrota.domain.enums.VehicleStatus;
 import br.com.gestaofrota.application.services.VehicleService;
+import br.com.gestaofrota.domain.enums.VehicleStatus;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -46,7 +45,9 @@ public class VehicleController {
     }
 
     @GetMapping("/plate/{plate}")
-    public VehicleResponse findByPlate(@PathVariable String plate) {
+    public VehicleResponse findByPlate(
+            @PathVariable String plate
+    ) {
         return vehicleService.findByPlate(plate);
     }
 
@@ -60,34 +61,5 @@ public class VehicleController {
             @PathVariable VehicleStatus status
     ) {
         return vehicleService.findByStatus(status);
-    }
-
-    @GetMapping("/owner/{owner}")
-    public List<VehicleResponse> findByOwner(
-            @PathVariable VehicleOwner owner
-    ) {
-        return vehicleService.findByOwner(owner);
-    }
-
-    @GetMapping("/owner/{owner}/status/{status}")
-    public List<VehicleResponse> findByOwnerAndStatus(
-            @PathVariable VehicleOwner owner,
-            @PathVariable VehicleStatus status
-    ) {
-        return vehicleService.findByOwnerAndStatus(owner, status);
-    }
-
-    @GetMapping("/role/{role}")
-    public List<VehicleResponse> findByRole(
-            @PathVariable VehicleRole role
-    ) {
-        return vehicleService.findByRole(role);
-    }
-
-    @GetMapping("/available-seats/{availableSeats}")
-    public List<VehicleResponse> findByAvailableSeats(
-            @PathVariable int availableSeats
-    ) {
-        return vehicleService.findByAvailableSeats(availableSeats);
     }
 }
