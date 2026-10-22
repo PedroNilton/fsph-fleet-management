@@ -110,6 +110,15 @@ public class UserService {
         user.deactivate();
     }
 
+    @Transactional
+    public void reactivate(UUID id) {
+        User user = find(id);
+        if (user.isActive()) {
+            return;
+        }
+        user.reactivate();
+    }
+
     private Sector findSector(UUID id) {
         return sectorRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Setor", id));

@@ -87,4 +87,8 @@ public class User {
     public void deactivate() {
         this.active = false;
     }
+
+    public void reactivate() {
+        this.active = true;
+    }
 }

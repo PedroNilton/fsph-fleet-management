@@ -21,9 +21,12 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.util.List;
 import java.util.UUID;
 
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -88,6 +91,37 @@ class AdminCrudAuthorizationTests {
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.title").value("Recurso não encontrado"))
                 .andExpect(jsonPath("$.detail").value("Setor com identificador '" + id + "' não encontrado."))
+                .andExpect(jsonPath("$.code").value("RESOURCE_NOT_FOUND"));
+    }
+
+    @Test
+    void allowsUserWithUsersWriteToReactivateUser() throws Exception {
+        UUID id = UUID.randomUUID();
+
+        mockMvc.perform(patch("/api/v1/users/{id}/reactivate", id)
+                        .with(user("admin").authorities(() -> "USERS_WRITE")))
+                .andExpect(status().isNoContent());
+
+        verify(userService).reactivate(id);
+    }
+
+    @Test
+    void deniesReactivateWithoutUsersWritePermission() throws Exception {
+        UUID id = UUID.randomUUID();
+
+        mockMvc.perform(patch("/api/v1/users/{id}/reactivate", id)
+                        .with(user("gestor").authorities(() -> "USERS_READ")))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void returnsNotFoundWhenReactivatingMissingUser() throws Exception {
+        UUID id = UUID.randomUUID();
+        doThrow(new ResourceNotFoundException("Usuário", id)).when(userService).reactivate(id);
+
+        mockMvc.perform(patch("/api/v1/users/{id}/reactivate", id)
+                        .with(user("admin").authorities(() -> "USERS_WRITE")))
+                .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.code").value("RESOURCE_NOT_FOUND"));
     }
 }

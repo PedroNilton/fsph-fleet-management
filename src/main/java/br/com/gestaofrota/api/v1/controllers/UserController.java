@@ -92,4 +92,11 @@ public class UserController {
         userService.deactivate(id);
         return ResponseEntity.noContent().build();
     }
+
+    @PatchMapping("/{id}/reactivate")
+    @PreAuthorize("hasAuthority('USERS_WRITE')")
+    public ResponseEntity<Void> reactivate(@PathVariable UUID id) {
+        userService.reactivate(id);
+        return ResponseEntity.noContent().build();
+    }
 }
