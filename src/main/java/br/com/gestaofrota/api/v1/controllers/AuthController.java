@@ -47,7 +47,8 @@ public class AuthController {
                 user.sectorId(),
                 user.name(),
                 user.email(),
-                user.role()
+                user.role(),
+                user.permissions()
         ));
     }
 
