@@ -64,9 +64,13 @@ ADMIN_SECTOR_NAME=Administrativo
 JWT_SECRET=
 JWT_EXPIRATION=PT1H
 JWT_ISSUER=fsph-fleet-management
+
+CORS_ALLOWED_ORIGINS=http://localhost:5173
 ```
 
 Altere as senhas de exemplo e gere um JWT secret aleatório para o ambiente local.
+Para mais de um frontend, informe as origens permitidas separadas por vírgula em
+`CORS_ALLOWED_ORIGINS`, sem usar curingas.
 
 Na primeira inicialização, o backend cria o administrador configurado acima e o
 setor `Administrativo`, caso ainda não existam. Opcionalmente, personalize o nome

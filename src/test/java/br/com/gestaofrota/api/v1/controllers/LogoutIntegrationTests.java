@@ -24,6 +24,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -83,6 +84,10 @@ class LogoutIntegrationTests extends PostgresIntegrationTest {
         Set<Permission> originalPermissions = rolePermissionService.find(UserRole.GESTOR_FROTA);
         rolePermissionService.replace(UserRole.GESTOR_FROTA, Set.of(Permission.SECTORS_READ));
         try {
+            mockMvc.perform(get("/api/v1/auth/me").header(HttpHeaders.AUTHORIZATION, "Bearer " + gestorToken))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.permissions", containsInAnyOrder("SECTORS_READ")));
+
             mockMvc.perform(get("/api/v1/sectors").header(HttpHeaders.AUTHORIZATION, "Bearer " + gestorToken))
                     .andExpect(status().isOk());
             mockMvc.perform(get("/api/v1/users").header(HttpHeaders.AUTHORIZATION, "Bearer " + gestorToken))
@@ -97,6 +102,11 @@ class LogoutIntegrationTests extends PostgresIntegrationTest {
 
             mockMvc.perform(get("/api/v1/users").header(HttpHeaders.AUTHORIZATION, "Bearer " + gestorToken))
                     .andExpect(status().isOk());
+
+            mockMvc.perform(get("/api/v1/auth/me").header(HttpHeaders.AUTHORIZATION, "Bearer " + gestorToken))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.permissions",
+                            containsInAnyOrder("SECTORS_READ", "USERS_READ")));
 
             mockMvc.perform(put("/api/v1/roles/ADMIN/permissions")
                             .header(HttpHeaders.AUTHORIZATION, "Bearer " + adminToken)

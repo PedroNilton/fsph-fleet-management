@@ -34,9 +34,12 @@ import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.doThrow;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.options;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
+import static org.hamcrest.Matchers.containsString;
 
 @WebMvcTest(AuthController.class)
 @AutoConfigureMockMvc
@@ -128,7 +131,7 @@ class AuthControllerTests {
     }
 
     @Test
-    void returnsAuthenticatedUserIdentity() throws Exception {
+    void returnsAuthenticatedUserIdentityAndEffectivePermissionsWithoutPermissionsRead() throws Exception {
         UUID userId = UUID.randomUUID();
         UUID sectorId = UUID.randomUUID();
         AuthenticatedUser authenticatedUser = new AuthenticatedUser(
@@ -151,9 +154,32 @@ class AuthControllerTests {
                           "sectorId": "%s",
                           "name": "Gestora de Frota",
                           "email": "gestora@exemplo.com",
-                          "role": "GESTOR_FROTA"
+                          "role": "GESTOR_FROTA",
+                          "permissions": ["SECTORS_READ"]
                         }
                         """.formatted(userId, sectorId), JsonCompareMode.STRICT));
+    }
+
+    @Test
+    void allowsPreflightFromConfiguredOriginWithoutAuthentication() throws Exception {
+        mockMvc.perform(options("/api/v1/auth/me")
+                        .header("Origin", "https://frontend.test")
+                        .header("Access-Control-Request-Method", "GET")
+                        .header("Access-Control-Request-Headers", "Authorization"))
+                .andExpect(status().isOk())
+                .andExpect(header().string("Access-Control-Allow-Origin", "https://frontend.test"))
+                .andExpect(header().string("Access-Control-Allow-Methods", containsString("GET")))
+                .andExpect(header().string("Access-Control-Allow-Headers", containsString("Authorization")));
+    }
+
+    @Test
+    void rejectsPreflightFromUnconfiguredOrigin() throws Exception {
+        mockMvc.perform(options("/api/v1/auth/me")
+                        .header("Origin", "https://untrusted.test")
+                        .header("Access-Control-Request-Method", "GET")
+                        .header("Access-Control-Request-Headers", "Authorization"))
+                .andExpect(status().isForbidden())
+                .andExpect(header().doesNotExist("Access-Control-Allow-Origin"));
     }
 
     @Test
