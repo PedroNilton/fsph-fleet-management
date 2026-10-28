@@ -19,3 +19,4 @@ INSERT INTO role_permissions (role, permission) VALUES
     ('MOTORISTA', 'FUEL_STATIONS_READ'),
     ('MOTORISTA', 'FUELINGS_WRITE')
 ON CONFLICT (role, permission) DO NOTHING;
+

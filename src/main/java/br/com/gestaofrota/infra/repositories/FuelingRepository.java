@@ -27,3 +27,4 @@ public interface FuelingRepository extends JpaRepository<Fueling, UUID> {
 
     Optional<Fueling> findFirstByVehicleIdOrderByOdometerKmDescCreatedAtDesc(UUID vehicleId);
 }
+

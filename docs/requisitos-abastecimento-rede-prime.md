@@ -79,3 +79,4 @@ Este documento formaliza o refinamento de requisitos e os critérios de aceitaç
 - **CA-ABA-04 (Rejeição de regressão ou repetição de km):** Dado um veículo com abastecimento anterior em `20.500 km`, quando tentar registrar novo abastecimento com `<= 20.500 km`, então a API deve rejeitar com `409 Conflict`.
 - **CA-ABA-05 (Consumo médio e comparativo da frota):** Dado múltiplos veículos com abastecimentos registrados, quando o gestor consultar o painel/endpoint de consumo da frota, então deve visualizar o `km/L` médio ponderado de cada veículo, gasto acumulado e comparação com a média da frota.
 - **CA-ABA-06 (Alerta automático de consumo fora do padrão):** Dado um veículo cuja média histórica é `10,00 km/L`, quando for registrado um abastecimento resultando em `6,50 km/L` (queda de 35%), então o abastecimento deve ser marcado com `outOfPattern = true`, justificativa preenchida e listado em `GET /api/v1/fuelings/alerts`.
+

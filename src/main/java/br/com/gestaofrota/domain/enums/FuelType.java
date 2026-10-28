@@ -7,3 +7,4 @@ public enum FuelType {
     DIESEL_S10,
     CNG
 }
+

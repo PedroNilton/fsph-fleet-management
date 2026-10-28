@@ -139,3 +139,4 @@ public class PrimeFuelStation {
         return updatedAt;
     }
 }
+

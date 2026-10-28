@@ -66,3 +66,4 @@ CREATE INDEX ix_fuelings_anomalies
 
 CREATE INDEX ix_fuelings_user_history
     ON fuelings (registered_by_user_id, fueled_on DESC, created_at DESC);
+

@@ -19,3 +19,4 @@ public interface PrimeFuelStationRepository extends JpaRepository<PrimeFuelStati
 
     boolean existsByCnpjAndIdNot(String cnpj, UUID id);
 }
+
