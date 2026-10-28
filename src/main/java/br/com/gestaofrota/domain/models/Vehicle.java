@@ -1,7 +1,7 @@
 package br.com.gestaofrota.domain.models;
 
-
-import br.com.gestaofrota.domain.enums.VehicleStatus;
+import br.com.gestaofrota.domain.exceptions.ConflictException;
+import br.com.gestaofrota.domain.exceptions.InvalidRequestException;
 import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -37,6 +37,9 @@ public class Vehicle {
 
     @Column(name = "is_active", nullable = false)
     private boolean active = true;
+
+    @Column(name = "in_maintenance", nullable = false)
+    private boolean inMaintenance = false;
 
     @Version
     @Column(nullable = false)
@@ -94,6 +97,14 @@ public class Vehicle {
         return active;
     }
 
+    public boolean isInMaintenance() {
+        return inMaintenance;
+    }
+
+    public boolean isAvailableForAllocation() {
+        return active && !inMaintenance;
+    }
+
     public Instant getCreatedAt() {
         return createdAt;
     }
@@ -111,7 +122,34 @@ public class Vehicle {
         this.currentOdometerKm = currentOdometerKm;
     }
 
+    public void updateCurrentOdometerKm(long currentOdometerKm) {
+        if (currentOdometerKm < 0) {
+            throw new InvalidRequestException("Quilometragem atual não pode ser negativa");
+        }
+        if (currentOdometerKm < this.currentOdometerKm) {
+            throw new ConflictException("A quilometragem não pode ser menor que a atual");
+        }
+        this.currentOdometerKm = currentOdometerKm;
+    }
+
+    public void startMaintenance() {
+        if (!active) {
+            throw new ConflictException("Veículo inativo não pode entrar em manutenção");
+        }
+        if (inMaintenance) {
+            throw new ConflictException("Veículo já possui manutenção em andamento");
+        }
+        this.inMaintenance = true;
+    }
+
+    public void finishMaintenance() {
+        this.inMaintenance = false;
+    }
+
     public void deactivate() {
+        if (inMaintenance) {
+            throw new ConflictException("Veículo em manutenção não pode ser desativado");
+        }
         this.active = false;
     }
 }

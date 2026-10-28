@@ -73,8 +73,15 @@ class UserRolePersistenceIntegrationTests extends PostgresIntegrationTest {
         for (UserRole role : UserRole.values()) {
             if (role != UserRole.ADMIN) {
                 Set<Permission> expected = switch (role) {
-                    case GESTOR_FROTA -> Set.of(Permission.SECTORS_READ, Permission.VEHICLES_READ,
-                            Permission.VEHICLES_WRITE, Permission.DRIVERS_READ, Permission.DRIVERS_WRITE);
+                    case GESTOR_FROTA -> Set.of(
+                            Permission.SECTORS_READ,
+                            Permission.VEHICLES_READ,
+                            Permission.VEHICLES_WRITE,
+                            Permission.DRIVERS_READ,
+                            Permission.DRIVERS_WRITE,
+                            Permission.MAINTENANCES_READ,
+                            Permission.MAINTENANCES_WRITE
+                    );
                     case MOTORISTA -> Set.of(Permission.SECTORS_READ, Permission.VEHICLES_READ);
                     default -> Set.of(Permission.SECTORS_READ);
                 };
