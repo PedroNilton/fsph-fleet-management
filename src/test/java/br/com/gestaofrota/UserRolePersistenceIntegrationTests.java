@@ -83,6 +83,17 @@ class UserRolePersistenceIntegrationTests extends PostgresIntegrationTest {
                             Permission.MAINTENANCES_WRITE
                     );
                     case MOTORISTA -> Set.of(Permission.SECTORS_READ, Permission.VEHICLES_READ);
+                            Permission.FUEL_STATIONS_READ,
+                            Permission.FUEL_STATIONS_WRITE,
+                            Permission.FUELINGS_READ,
+                            Permission.FUELINGS_WRITE
+                    );
+                    case MOTORISTA -> Set.of(
+                            Permission.SECTORS_READ,
+                            Permission.VEHICLES_READ,
+                            Permission.FUEL_STATIONS_READ,
+                            Permission.FUELINGS_WRITE
+                    );
                     default -> Set.of(Permission.SECTORS_READ);
                 };
                 assertThat(rolePermissionService.find(role)).isEqualTo(expected);

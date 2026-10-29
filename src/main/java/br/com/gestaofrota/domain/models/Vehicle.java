@@ -1,5 +1,7 @@
 package br.com.gestaofrota.domain.models;
 
+
+import br.com.gestaofrota.domain.enums.VehicleStatus;
 import br.com.gestaofrota.domain.exceptions.ConflictException;
 import br.com.gestaofrota.domain.exceptions.InvalidRequestException;
 import jakarta.persistence.*;
