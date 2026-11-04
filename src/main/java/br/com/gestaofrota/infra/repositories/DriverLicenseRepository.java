@@ -2,6 +2,7 @@ package br.com.gestaofrota.infra.repositories;
 
 import br.com.gestaofrota.domain.enums.RecordStatus;
 import br.com.gestaofrota.domain.models.DriverLicense;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
@@ -15,6 +16,9 @@ public interface DriverLicenseRepository extends JpaRepository<DriverLicense, UU
     Optional<DriverLicense> findByIdAndDriverId(UUID id, UUID driverId);
 
     Optional<DriverLicense> findByDriverIdAndStatus(UUID driverId, RecordStatus status);
+
+    @EntityGraph(attributePaths = {"driver", "driver.user", "driver.user.sector"})
+    List<DriverLicense> findByStatus(RecordStatus status);
 
     boolean existsByLicenseNumberIgnoreCaseAndStatusAndDriverIdNot(String licenseNumber, RecordStatus status, UUID driverId);
 }
