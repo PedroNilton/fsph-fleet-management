@@ -9,6 +9,7 @@ import br.com.gestaofrota.application.services.DriverLicenseService;
 import br.com.gestaofrota.application.services.MaintenanceService;
 import br.com.gestaofrota.application.services.PrimeFuelStationService;
 import br.com.gestaofrota.application.services.FuelingService;
+import br.com.gestaofrota.application.services.TripRequestService;
 import br.com.gestaofrota.infra.repositories.RolePermissionRepository;
 import br.com.gestaofrota.infra.config.startup.AdminInitializer;
 import br.com.gestaofrota.infra.security.services.RevokedTokenService;
@@ -68,6 +69,9 @@ class OpenApiConfigTests {
 
     @MockitoBean
     private FuelingService fuelingService;
+
+    @MockitoBean
+    private TripRequestService tripRequestService;
 
     @MockitoBean
     private RolePermissionRepository rolePermissionRepository;
