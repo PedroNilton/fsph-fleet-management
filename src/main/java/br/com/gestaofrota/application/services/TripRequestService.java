@@ -51,6 +51,7 @@ public class TripRequestService {
     private final DriverRepository drivers;
     private final DriverLicenseRepository driverLicenses;
     private final MaintenanceAvailabilityGuard maintenanceGuard;
+    private final NotificationService notifications;
 
     public TripRequestService(
             TripRequestRepository tripRequests,
@@ -58,7 +59,8 @@ public class TripRequestService {
             VehicleRepository vehicles,
             DriverRepository drivers,
             DriverLicenseRepository driverLicenses,
-            MaintenanceAvailabilityGuard maintenanceGuard
+            MaintenanceAvailabilityGuard maintenanceGuard,
+            NotificationService notifications
     ) {
         this.tripRequests = tripRequests;
         this.users = users;
@@ -66,6 +68,7 @@ public class TripRequestService {
         this.drivers = drivers;
         this.driverLicenses = driverLicenses;
         this.maintenanceGuard = maintenanceGuard;
+        this.notifications = notifications;
     }
 
     @Transactional(readOnly = true)
@@ -247,6 +250,7 @@ public class TripRequestService {
                 : null;
 
         request.approve(decidedBy, preAssignedVehicle, decisionNotes, Instant.now());
+        notifications.notifyTripRequestApproved(request);
         return request;
     }
 
@@ -255,6 +259,7 @@ public class TripRequestService {
         TripRequest request = lockTripRequest(requestId);
         User decidedBy = findUser(managerUserId);
         request.reject(decidedBy, rejectionReason, Instant.now());
+        notifications.notifyTripRequestRejected(request);
         return request;
     }
 
@@ -283,6 +288,7 @@ public class TripRequestService {
         );
 
         request.schedule(scheduledBy, lockedVehicle, lockedDriver, Instant.now());
+        notifications.notifyTripRequestScheduled(request);
         return request;
     }
 
