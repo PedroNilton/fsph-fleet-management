@@ -1,8 +1,13 @@
 package br.com.gestaofrota.api.v1.controllers;
 
+import br.com.gestaofrota.api.v1.dtos.requests.ApproveTripRequest;
 import br.com.gestaofrota.api.v1.dtos.requests.CreateTripRequest;
+import br.com.gestaofrota.api.v1.dtos.requests.RejectTripRequest;
+import br.com.gestaofrota.api.v1.dtos.requests.ScheduleTripRequest;
 import br.com.gestaofrota.api.v1.dtos.requests.UpdateTripRequest;
 import br.com.gestaofrota.api.v1.dtos.responses.EligibleVehicleResponse;
+import br.com.gestaofrota.api.v1.dtos.responses.FleetCalendarResponse;
+import br.com.gestaofrota.api.v1.dtos.responses.TripRequestAvailabilityResponse;
 import br.com.gestaofrota.api.v1.dtos.responses.TripRequestResponse;
 import br.com.gestaofrota.application.services.TripRequestService;
 import br.com.gestaofrota.domain.enums.Permission;
@@ -27,6 +32,25 @@ public class TripRequestController {
 
     public TripRequestController(TripRequestService tripRequests) {
         this.tripRequests = tripRequests;
+    }
+
+    @GetMapping
+    @PreAuthorize("hasAuthority('TRIP_REQUESTS_READ')")
+    public List<TripRequestResponse> listAll(
+            @RequestParam(required = false) TripRequestStatus status
+    ) {
+        return tripRequests.listAll(status).stream()
+                .map(TripRequestResponse::from)
+                .toList();
+    }
+
+    @GetMapping("/calendar")
+    @PreAuthorize("hasAuthority('TRIP_REQUESTS_READ')")
+    public FleetCalendarResponse getFleetCalendar(
+            @RequestParam Instant from,
+            @RequestParam Instant to
+    ) {
+        return tripRequests.getFleetCalendar(from, to);
     }
 
     @GetMapping("/eligible-vehicles")
@@ -83,6 +107,12 @@ public class TripRequestController {
         return TripRequestResponse.from(tripRequests.findVisibleTo(id, user.id(), canReadAll));
     }
 
+    @GetMapping("/{id}/availability")
+    @PreAuthorize("hasAuthority('TRIP_REQUESTS_MANAGE')")
+    public TripRequestAvailabilityResponse analyzeAvailability(@PathVariable UUID id) {
+        return tripRequests.analyzeAvailability(id);
+    }
+
     @PutMapping("/{id}")
     @PreAuthorize("hasAuthority('TRIP_REQUESTS_WRITE')")
     public TripRequestResponse updatePending(
@@ -112,5 +142,51 @@ public class TripRequestController {
             @PathVariable UUID id
     ) {
         return TripRequestResponse.from(tripRequests.cancelByRequester(id, user.id()));
+    }
+
+    @PatchMapping("/{id}/approve")
+    @PreAuthorize("hasAuthority('TRIP_REQUESTS_MANAGE')")
+    public TripRequestResponse approve(
+            @AuthenticationPrincipal AuthenticatedUser user,
+            @PathVariable UUID id,
+            @Valid @RequestBody(required = false) ApproveTripRequest request
+    ) {
+        return TripRequestResponse.from(
+                tripRequests.approve(
+                        id,
+                        user.id(),
+                        request != null ? request.vehicleId() : null,
+                        request != null ? request.decisionNotes() : null
+                )
+        );
+    }
+
+    @PatchMapping("/{id}/reject")
+    @PreAuthorize("hasAuthority('TRIP_REQUESTS_MANAGE')")
+    public TripRequestResponse reject(
+            @AuthenticationPrincipal AuthenticatedUser user,
+            @PathVariable UUID id,
+            @Valid @RequestBody RejectTripRequest request
+    ) {
+        return TripRequestResponse.from(
+                tripRequests.reject(id, user.id(), request.rejectionReason())
+        );
+    }
+
+    @PatchMapping("/{id}/schedule")
+    @PreAuthorize("hasAuthority('TRIP_REQUESTS_MANAGE')")
+    public TripRequestResponse schedule(
+            @AuthenticationPrincipal AuthenticatedUser user,
+            @PathVariable UUID id,
+            @Valid @RequestBody ScheduleTripRequest request
+    ) {
+        return TripRequestResponse.from(
+                tripRequests.schedule(
+                        id,
+                        user.id(),
+                        request.vehicleId(),
+                        request.driverId()
+                )
+        );
     }
 }
