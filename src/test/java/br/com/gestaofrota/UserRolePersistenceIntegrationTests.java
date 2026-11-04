@@ -80,9 +80,7 @@ class UserRolePersistenceIntegrationTests extends PostgresIntegrationTest {
                             Permission.DRIVERS_READ,
                             Permission.DRIVERS_WRITE,
                             Permission.MAINTENANCES_READ,
-                            Permission.MAINTENANCES_WRITE
-                    );
-                    case MOTORISTA -> Set.of(Permission.SECTORS_READ, Permission.VEHICLES_READ);
+                            Permission.MAINTENANCES_WRITE,
                             Permission.FUEL_STATIONS_READ,
                             Permission.FUEL_STATIONS_WRITE,
                             Permission.FUELINGS_READ,

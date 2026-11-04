@@ -55,6 +55,8 @@ class GestaoFrotaApplicationTests {
 
 	@MockitoBean
 	private MaintenanceService maintenanceService;
+
+	@MockitoBean
 	private PrimeFuelStationService primeFuelStationService;
 
 	@MockitoBean
