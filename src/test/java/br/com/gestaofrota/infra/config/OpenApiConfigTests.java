@@ -6,6 +6,8 @@ import br.com.gestaofrota.application.services.VehicleService;
 import br.com.gestaofrota.application.services.VehicleDocumentService;
 import br.com.gestaofrota.application.services.DriverService;
 import br.com.gestaofrota.application.services.DriverLicenseService;
+import br.com.gestaofrota.application.services.TripService;
+import br.com.gestaofrota.application.services.TripUtilizationService;
 import br.com.gestaofrota.application.services.MaintenanceService;
 import br.com.gestaofrota.application.services.PrimeFuelStationService;
 import br.com.gestaofrota.application.services.FuelingService;
@@ -61,6 +63,12 @@ class OpenApiConfigTests {
 
     @MockitoBean
     private DriverLicenseService driverLicenseService;
+
+    @MockitoBean
+    private TripService tripService;
+
+    @MockitoBean
+    private TripUtilizationService tripUtilizationService;
 
     @MockitoBean
     private MaintenanceService maintenanceService;

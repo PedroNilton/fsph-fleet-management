@@ -13,6 +13,7 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.Collection;
 
 public interface VehicleRepository extends JpaRepository<Vehicle, UUID> {
 
@@ -28,6 +29,10 @@ public interface VehicleRepository extends JpaRepository<Vehicle, UUID> {
     @Override
     @EntityGraph(attributePaths = "sector")
     Optional<Vehicle> findById(UUID id);
+
+    @EntityGraph(attributePaths = "sector")
+    @Query("select vehicle from Vehicle vehicle where vehicle.id in :vehicleIds")
+    List<Vehicle> findAllWithSectorByIdIn(@Param("vehicleIds") Collection<UUID> vehicleIds);
 
     @EntityGraph(attributePaths = "sector")
     List<Vehicle> findByActiveTrueAndInMaintenanceFalseOrderByPlateAsc();

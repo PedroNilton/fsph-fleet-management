@@ -6,6 +6,7 @@ import br.com.gestaofrota.api.v1.errors.RestAuthenticationEntryPoint;
 import br.com.gestaofrota.application.services.MaintenanceService;
 import br.com.gestaofrota.application.services.VehicleDocumentService;
 import br.com.gestaofrota.application.services.VehicleService;
+import br.com.gestaofrota.application.services.TripUtilizationService;
 import br.com.gestaofrota.infra.security.SecurityConfig;
 import br.com.gestaofrota.infra.security.jwt.JwtService;
 import br.com.gestaofrota.infra.security.services.CustomUserDetailsService;
@@ -46,6 +47,9 @@ class MaintenanceControllerAuthorizationTests {
 
     @MockitoBean
     private VehicleService vehicles;
+
+    @MockitoBean
+    private TripUtilizationService tripUtilization;
 
     @MockitoBean
     private VehicleDocumentService documents;
