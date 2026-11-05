@@ -1,7 +1,6 @@
 package br.com.gestaofrota.domain.models;
 
 
-import br.com.gestaofrota.domain.enums.VehicleStatus;
 import br.com.gestaofrota.domain.exceptions.ConflictException;
 import br.com.gestaofrota.domain.exceptions.InvalidRequestException;
 import jakarta.persistence.*;
@@ -39,6 +38,9 @@ public class Vehicle {
 
     @Column(name = "is_active", nullable = false)
     private boolean active = true;
+
+    @Column(name = "in_maintenance", nullable = false)
+    private boolean inMaintenance = false;
 
     @Version
     @Column(nullable = false)
@@ -84,6 +86,14 @@ public class Vehicle {
         return capacity;
     }
 
+    public int getAvailablePassengerSeats() {
+        return Math.max(0, capacity - 1);
+    }
+
+    public boolean supportsPassengers(int passengerCount) {
+        return passengerCount >= 1 && getAvailablePassengerSeats() >= passengerCount;
+    }
+
     public String getUsageType() {
         return usageType;
     }
@@ -94,6 +104,14 @@ public class Vehicle {
 
     public boolean isActive() {
         return active;
+    }
+
+    public boolean isInMaintenance() {
+        return inMaintenance;
+    }
+
+    public boolean isAvailableForAllocation() {
+        return active && !inMaintenance;
     }
 
     public Instant getCreatedAt() {
@@ -123,7 +141,24 @@ public class Vehicle {
         this.currentOdometerKm = currentOdometerKm;
     }
 
+    public void startMaintenance() {
+        if (!active) {
+            throw new ConflictException("Veículo inativo não pode entrar em manutenção");
+        }
+        if (inMaintenance) {
+            throw new ConflictException("Veículo já possui manutenção em andamento");
+        }
+        this.inMaintenance = true;
+    }
+
+    public void finishMaintenance() {
+        this.inMaintenance = false;
+    }
+
     public void deactivate() {
+        if (inMaintenance) {
+            throw new ConflictException("Veículo em manutenção não pode ser desativado");
+        }
         this.active = false;
     }
 }

@@ -73,10 +73,37 @@ class UserRolePersistenceIntegrationTests extends PostgresIntegrationTest {
         for (UserRole role : UserRole.values()) {
             if (role != UserRole.ADMIN) {
                 Set<Permission> expected = switch (role) {
-                    case GESTOR_FROTA -> Set.of(Permission.SECTORS_READ, Permission.VEHICLES_READ,
-                            Permission.VEHICLES_WRITE, Permission.DRIVERS_READ, Permission.DRIVERS_WRITE);
-                    case MOTORISTA -> Set.of(Permission.SECTORS_READ, Permission.VEHICLES_ASSIGNED_READ,
-                            Permission.TRIPS_WRITE);
+                    case GESTOR_FROTA -> Set.of(
+                            Permission.SECTORS_READ,
+                            Permission.VEHICLES_READ,
+                            Permission.VEHICLES_WRITE,
+                            Permission.DRIVERS_READ,
+                            Permission.DRIVERS_WRITE,
+                            Permission.MAINTENANCES_READ,
+                            Permission.MAINTENANCES_WRITE,
+                            Permission.FUEL_STATIONS_READ,
+                            Permission.FUEL_STATIONS_WRITE,
+                            Permission.FUELINGS_READ,
+                            Permission.FUELINGS_WRITE,
+                            Permission.TRIP_REQUESTS_READ,
+                            Permission.TRIP_REQUESTS_WRITE,
+                            Permission.TRIP_REQUESTS_MANAGE,
+                            Permission.NOTIFICATIONS_READ,
+                            Permission.TRIPS_READ
+                    );
+                    case EMPLOYEE -> Set.of(
+                            Permission.SECTORS_READ,
+                            Permission.TRIP_REQUESTS_WRITE,
+                            Permission.NOTIFICATIONS_READ
+                    );
+                    case MOTORISTA -> Set.of(
+                            Permission.SECTORS_READ,
+                            Permission.VEHICLES_ASSIGNED_READ,
+                            Permission.FUEL_STATIONS_READ,
+                            Permission.FUELINGS_WRITE,
+                            Permission.NOTIFICATIONS_READ,
+                            Permission.TRIPS_WRITE
+                    );
                     default -> Set.of(Permission.SECTORS_READ);
                 };
                 assertThat(rolePermissionService.find(role)).isEqualTo(expected);

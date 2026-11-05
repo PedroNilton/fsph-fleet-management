@@ -10,7 +10,13 @@ import br.com.gestaofrota.application.services.VehicleService;
 import br.com.gestaofrota.application.services.VehicleDocumentService;
 import br.com.gestaofrota.application.services.DriverService;
 import br.com.gestaofrota.application.services.TripService;
+import br.com.gestaofrota.application.services.TripUtilizationService;
 import br.com.gestaofrota.application.services.DriverLicenseService;
+import br.com.gestaofrota.application.services.MaintenanceService;
+import br.com.gestaofrota.application.services.PrimeFuelStationService;
+import br.com.gestaofrota.application.services.FuelingService;
+import br.com.gestaofrota.application.services.TripRequestService;
+import br.com.gestaofrota.application.services.NotificationService;
 import br.com.gestaofrota.infra.repositories.RolePermissionRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,6 +59,24 @@ class GestaoFrotaApplicationTests {
 
 	@MockitoBean
 	private TripService tripService;
+
+	@MockitoBean
+	private TripUtilizationService tripUtilizationService;
+
+	@MockitoBean
+	private MaintenanceService maintenanceService;
+
+	@MockitoBean
+	private PrimeFuelStationService primeFuelStationService;
+
+	@MockitoBean
+	private FuelingService fuelingService;
+
+	@MockitoBean
+	private TripRequestService tripRequestService;
+
+	@MockitoBean
+	private NotificationService notificationService;
 
 	@MockitoBean
 	private RolePermissionRepository rolePermissionRepository;

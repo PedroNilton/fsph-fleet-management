@@ -34,6 +34,9 @@ public interface VehicleRepository extends JpaRepository<Vehicle, UUID> {
     @Query("select vehicle from Vehicle vehicle where vehicle.id in :vehicleIds")
     List<Vehicle> findAllWithSectorByIdIn(@Param("vehicleIds") Collection<UUID> vehicleIds);
 
+    @EntityGraph(attributePaths = "sector")
+    List<Vehicle> findByActiveTrueAndInMaintenanceFalseOrderByPlateAsc();
+
     boolean existsByPlateIgnoreCase(String plate);
     boolean existsByPlateIgnoreCaseAndIdNot(String plate, UUID id);
     boolean existsBySectorId(UUID sectorId);
