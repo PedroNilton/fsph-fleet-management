@@ -58,6 +58,9 @@ class SvoDutyShiftControllerAuthorizationTests {
     void requiresAuthentication() throws Exception {
         mockMvc.perform(get("/api/v1/svo/shifts"))
                 .andExpect(status().isUnauthorized());
+
+        mockMvc.perform(get("/api/v1/svo/shifts/current"))
+                .andExpect(status().isUnauthorized());
     }
 
     @Test
@@ -74,6 +77,13 @@ class SvoDutyShiftControllerAuthorizationTests {
         ReflectionTestUtils.setField(shift, "id", shiftId);
 
         when(svoDutyShiftService.list(any(), any(), any(), any())).thenReturn(List.of(shift));
+        when(svoDutyShiftService.getCurrentShifts(any())).thenReturn(List.of(shift));
+
+        // ATENDENTE_SVO with SVO_SHIFTS_READ can view current shifts
+        mockMvc.perform(get("/api/v1/svo/shifts/current")
+                        .with(user("atendente").authorities(() -> "SVO_SHIFTS_READ")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].teamName").value("Equipe Gama"));
 
         // ATENDENTE without SVO_SHIFTS_WRITE cannot cancel shift
         mockMvc.perform(patch("/api/v1/svo/shifts/" + shiftId + "/cancel")

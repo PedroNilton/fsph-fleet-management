@@ -165,4 +165,19 @@ class SvoDutyShiftServiceTests {
         assertThat(canceled.getStatus()).isEqualTo(SvoShiftStatus.CANCELED);
         verify(auditLogService).record(eq(actor), eq("SVO_SHIFT_CANCELED"), eq("SVO_SHIFT"), eq(shiftId.toString()), any());
     }
+
+    @Test
+    @DisplayName("Should return current shifts for now")
+    void returnCurrentShifts() {
+        Instant now = Instant.now();
+        SvoDutyShift activeShift = new SvoDutyShift(team, null, now.minus(2, java.time.temporal.ChronoUnit.HOURS), now.plus(6, java.time.temporal.ChronoUnit.HOURS), "DIURNO", null);
+        org.springframework.test.util.ReflectionTestUtils.setField(activeShift, "status", SvoShiftStatus.ACTIVE);
+
+        when(shiftRepository.findCurrentShifts(any(), any())).thenReturn(List.of(activeShift));
+
+        List<SvoDutyShift> current = shiftService.getCurrentShifts(now);
+
+        assertThat(current).hasSize(1);
+        assertThat(current.get(0)).isEqualTo(activeShift);
+    }
 }

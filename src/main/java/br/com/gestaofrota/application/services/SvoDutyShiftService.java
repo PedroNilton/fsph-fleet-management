@@ -124,6 +124,12 @@ public class SvoDutyShiftService {
                 .orElseThrow(() -> new ResourceNotFoundException("Plantão SVO", id));
     }
 
+    @Transactional(readOnly = true)
+    public List<SvoDutyShift> getCurrentShifts(Instant at) {
+        Instant effectiveAt = at != null ? at : Instant.now();
+        return shiftRepository.findCurrentShifts(effectiveAt, ACTIVE_SHIFT_STATUSES);
+    }
+
     private void validatePeriod(Instant startAt, Instant endAt) {
         if (startAt == null || endAt == null) {
             throw new InvalidRequestException("Data/hora de início e término são obrigatórias");

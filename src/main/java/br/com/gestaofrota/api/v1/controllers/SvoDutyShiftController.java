@@ -40,6 +40,16 @@ public class SvoDutyShiftController {
                 .toList();
     }
 
+    @GetMapping("/current")
+    @PreAuthorize("hasAuthority('SVO_SHIFTS_READ')")
+    public List<SvoDutyShiftResponse> currentShifts(
+            @RequestParam(required = false) Instant at
+    ) {
+        return shiftService.getCurrentShifts(at).stream()
+                .map(SvoDutyShiftResponse::from)
+                .toList();
+    }
+
     @GetMapping("/{id}")
     @PreAuthorize("hasAuthority('SVO_SHIFTS_READ')")
     public SvoDutyShiftResponse find(@PathVariable UUID id) {
