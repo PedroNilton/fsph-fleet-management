@@ -1,5 +1,6 @@
 package br.com.gestaofrota.application.services;
 
+import br.com.gestaofrota.api.v1.dtos.responses.SvoCoverageReportResponse;
 import br.com.gestaofrota.domain.enums.Permission;
 import br.com.gestaofrota.domain.enums.SvoShiftStatus;
 import br.com.gestaofrota.domain.enums.UserRole;
@@ -149,6 +150,81 @@ class SvoDutyShiftServiceTests {
     }
 
     @Test
+    @DisplayName("Should return current shifts for now")
+    void returnCurrentShifts() {
+        Instant now = Instant.now();
+        SvoDutyShift activeShift = new SvoDutyShift(team, null, now.minus(2, ChronoUnit.HOURS), now.plus(6, ChronoUnit.HOURS), "DIURNO", null);
+        ReflectionTestUtils.setField(activeShift, "status", SvoShiftStatus.ACTIVE);
+
+        when(shiftRepository.findCurrentShifts(any(), any())).thenReturn(List.of(activeShift));
+
+        List<SvoDutyShift> current = shiftService.getCurrentShifts(now);
+
+        assertThat(current).hasSize(1);
+        assertThat(current.get(0)).isEqualTo(activeShift);
+    }
+
+    @Test
+    @DisplayName("Should detect coverage gap when no shifts exist in period")
+    void detectGapWhenNoShiftsExist() {
+        Instant from = Instant.parse("2026-06-01T00:00:00Z");
+        Instant to = Instant.parse("2026-06-01T24:00:00Z");
+
+        when(shiftRepository.findCoveringShifts(any(), eq(from), eq(to))).thenReturn(List.of());
+
+        SvoCoverageReportResponse report = shiftService.findCoverageGaps(from, to);
+
+        assertThat(report.fullyCovered()).isFalse();
+        assertThat(report.totalGaps()).isEqualTo(1);
+        assertThat(report.totalUncoveredHours()).isEqualTo(24.0);
+        assertThat(report.gaps()).hasSize(1);
+        assertThat(report.gaps().get(0).gapStart()).isEqualTo(from);
+        assertThat(report.gaps().get(0).gapEnd()).isEqualTo(to);
+    }
+
+    @Test
+    @DisplayName("Should report fully covered when shifts cover complete 24h window")
+    void reportFullyCoveredWhenCovered() {
+        Instant from = Instant.parse("2026-06-01T00:00:00Z");
+        Instant mid = Instant.parse("2026-06-01T12:00:00Z");
+        Instant to = Instant.parse("2026-06-02T00:00:00Z");
+
+        SvoDutyShift shift1 = new SvoDutyShift(team, null, from, mid, "DIURNO", null);
+        SvoDutyShift shift2 = new SvoDutyShift(team, null, mid, to, "NOTURNO", null);
+
+        when(shiftRepository.findCoveringShifts(any(), eq(from), eq(to))).thenReturn(List.of(shift1, shift2));
+
+        SvoCoverageReportResponse report = shiftService.findCoverageGaps(from, to);
+
+        assertThat(report.fullyCovered()).isTrue();
+        assertThat(report.totalGaps()).isEqualTo(0);
+        assertThat(report.totalUncoveredMinutes()).isEqualTo(0);
+        assertThat(report.gaps()).isEmpty();
+    }
+
+    @Test
+    @DisplayName("Should detect gap in the middle when two shifts have a hole between them")
+    void detectGapInMiddle() {
+        Instant from = Instant.parse("2026-06-01T00:00:00Z");
+        Instant s1End = Instant.parse("2026-06-01T06:00:00Z");
+        Instant s2Start = Instant.parse("2026-06-01T10:00:00Z");
+        Instant to = Instant.parse("2026-06-01T18:00:00Z");
+
+        SvoDutyShift shift1 = new SvoDutyShift(team, null, from, s1End, "MADRUGADA", null);
+        SvoDutyShift shift2 = new SvoDutyShift(team, null, s2Start, to, "TARDE", null);
+
+        when(shiftRepository.findCoveringShifts(any(), eq(from), eq(to))).thenReturn(List.of(shift1, shift2));
+
+        SvoCoverageReportResponse report = shiftService.findCoverageGaps(from, to);
+
+        assertThat(report.fullyCovered()).isFalse();
+        assertThat(report.totalGaps()).isEqualTo(1);
+        assertThat(report.totalUncoveredHours()).isEqualTo(4.0);
+        assertThat(report.gaps().get(0).gapStart()).isEqualTo(s1End);
+        assertThat(report.gaps().get(0).gapEnd()).isEqualTo(s2Start);
+    }
+
+    @Test
     @DisplayName("Should cancel duty shift successfully")
     void cancelShiftSuccessfully() {
         Instant start = Instant.now().plus(1, ChronoUnit.HOURS);
@@ -164,20 +240,5 @@ class SvoDutyShiftServiceTests {
 
         assertThat(canceled.getStatus()).isEqualTo(SvoShiftStatus.CANCELED);
         verify(auditLogService).record(eq(actor), eq("SVO_SHIFT_CANCELED"), eq("SVO_SHIFT"), eq(shiftId.toString()), any());
-    }
-
-    @Test
-    @DisplayName("Should return current shifts for now")
-    void returnCurrentShifts() {
-        Instant now = Instant.now();
-        SvoDutyShift activeShift = new SvoDutyShift(team, null, now.minus(2, java.time.temporal.ChronoUnit.HOURS), now.plus(6, java.time.temporal.ChronoUnit.HOURS), "DIURNO", null);
-        org.springframework.test.util.ReflectionTestUtils.setField(activeShift, "status", SvoShiftStatus.ACTIVE);
-
-        when(shiftRepository.findCurrentShifts(any(), any())).thenReturn(List.of(activeShift));
-
-        List<SvoDutyShift> current = shiftService.getCurrentShifts(now);
-
-        assertThat(current).hasSize(1);
-        assertThat(current.get(0)).isEqualTo(activeShift);
     }
 }

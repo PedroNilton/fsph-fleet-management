@@ -2,6 +2,7 @@ package br.com.gestaofrota.api.v1.controllers;
 
 import br.com.gestaofrota.api.v1.dtos.requests.CreateSvoDutyShiftRequest;
 import br.com.gestaofrota.api.v1.dtos.requests.UpdateSvoDutyShiftRequest;
+import br.com.gestaofrota.api.v1.dtos.responses.SvoCoverageReportResponse;
 import br.com.gestaofrota.api.v1.dtos.responses.SvoDutyShiftResponse;
 import br.com.gestaofrota.application.services.SvoDutyShiftService;
 import br.com.gestaofrota.domain.enums.SvoShiftStatus;
@@ -48,6 +49,15 @@ public class SvoDutyShiftController {
         return shiftService.getCurrentShifts(at).stream()
                 .map(SvoDutyShiftResponse::from)
                 .toList();
+    }
+
+    @GetMapping("/coverage-gaps")
+    @PreAuthorize("hasAuthority('SVO_SHIFTS_READ')")
+    public SvoCoverageReportResponse findCoverageGaps(
+            @RequestParam Instant from,
+            @RequestParam Instant to
+    ) {
+        return shiftService.findCoverageGaps(from, to);
     }
 
     @GetMapping("/{id}")

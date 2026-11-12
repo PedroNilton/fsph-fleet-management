@@ -1,5 +1,7 @@
 package br.com.gestaofrota.application.services;
 
+import br.com.gestaofrota.api.v1.dtos.responses.SvoCoverageGapResponse;
+import br.com.gestaofrota.api.v1.dtos.responses.SvoCoverageReportResponse;
 import br.com.gestaofrota.domain.enums.SvoShiftStatus;
 import br.com.gestaofrota.domain.exceptions.ConflictException;
 import br.com.gestaofrota.domain.exceptions.InvalidRequestException;
@@ -128,6 +130,87 @@ public class SvoDutyShiftService {
     public List<SvoDutyShift> getCurrentShifts(Instant at) {
         Instant effectiveAt = at != null ? at : Instant.now();
         return shiftRepository.findCurrentShifts(effectiveAt, ACTIVE_SHIFT_STATUSES);
+    }
+
+    @Transactional(readOnly = true)
+    public SvoCoverageReportResponse findCoverageGaps(Instant from, Instant to) {
+        validatePeriod(from, to);
+
+        List<SvoDutyShift> coveringShifts = shiftRepository.findCoveringShifts(ACTIVE_SHIFT_STATUSES, from, to);
+
+        if (coveringShifts.isEmpty()) {
+            long durationMinutes = Duration.between(from, to).toMinutes();
+            double durationHours = roundHours(durationMinutes);
+            SvoCoverageGapResponse fullGap = new SvoCoverageGapResponse(from, to, durationMinutes, durationHours);
+            return new SvoCoverageReportResponse(from, to, false, 1, durationMinutes, durationHours, List.of(fullGap));
+        }
+
+        // Clip and merge intervals
+        List<TimeInterval> intervals = new ArrayList<>();
+        for (SvoDutyShift s : coveringShifts) {
+            Instant start = s.getStartAt().isBefore(from) ? from : s.getStartAt();
+            Instant end = s.getEndAt().isAfter(to) ? to : s.getEndAt();
+            if (end.isAfter(start)) {
+                intervals.add(new TimeInterval(start, end));
+            }
+        }
+
+        intervals.sort(Comparator.comparing(TimeInterval::start));
+
+        List<TimeInterval> merged = new ArrayList<>();
+        TimeInterval current = intervals.getFirst();
+        for (int i = 1; i < intervals.size(); i++) {
+            TimeInterval next = intervals.get(i);
+            if (!next.start().isAfter(current.end())) {
+                Instant maxEnd = current.end().isAfter(next.end()) ? current.end() : next.end();
+                current = new TimeInterval(current.start(), maxEnd);
+            } else {
+                merged.add(current);
+                current = next;
+            }
+        }
+        merged.add(current);
+
+        List<SvoCoverageGapResponse> gaps = new ArrayList<>();
+        if (merged.getFirst().start().isAfter(from)) {
+            gaps.add(createGap(from, merged.getFirst().start()));
+        }
+
+        for (int i = 0; i < merged.size() - 1; i++) {
+            Instant gapStart = merged.get(i).end();
+            Instant gapEnd = merged.get(i + 1).start();
+            if (gapEnd.isAfter(gapStart)) {
+                gaps.add(createGap(gapStart, gapEnd));
+            }
+        }
+
+        if (merged.getLast().end().isBefore(to)) {
+            gaps.add(createGap(merged.getLast().end(), to));
+        }
+
+        long totalUncoveredMinutes = gaps.stream().mapToLong(SvoCoverageGapResponse::durationMinutes).sum();
+        double totalUncoveredHours = roundHours(totalUncoveredMinutes);
+
+        return new SvoCoverageReportResponse(
+                from,
+                to,
+                gaps.isEmpty(),
+                gaps.size(),
+                totalUncoveredMinutes,
+                totalUncoveredHours,
+                gaps
+        );
+    }
+
+    private static SvoCoverageGapResponse createGap(Instant start, Instant end) {
+        long minutes = Duration.between(start, end).toMinutes();
+        return new SvoCoverageGapResponse(start, end, minutes, roundHours(minutes));
+    }
+
+    private static double roundHours(long minutes) {
+        return BigDecimal.valueOf(minutes)
+                .divide(BigDecimal.valueOf(60), 2, RoundingMode.HALF_UP)
+                .doubleValue();
     }
 
     private void validatePeriod(Instant startAt, Instant endAt) {

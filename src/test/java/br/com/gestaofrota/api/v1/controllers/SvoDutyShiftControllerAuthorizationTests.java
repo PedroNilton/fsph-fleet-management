@@ -1,5 +1,6 @@
 package br.com.gestaofrota.api.v1.controllers;
 
+import br.com.gestaofrota.api.v1.dtos.responses.SvoCoverageReportResponse;
 import br.com.gestaofrota.api.v1.errors.RestAccessDeniedHandler;
 import br.com.gestaofrota.api.v1.errors.RestAuthenticationEntryPoint;
 import br.com.gestaofrota.application.services.SvoDutyShiftService;
@@ -61,6 +62,11 @@ class SvoDutyShiftControllerAuthorizationTests {
 
         mockMvc.perform(get("/api/v1/svo/shifts/current"))
                 .andExpect(status().isUnauthorized());
+
+        mockMvc.perform(get("/api/v1/svo/shifts/coverage-gaps")
+                        .param("from", Instant.now().toString())
+                        .param("to", Instant.now().plusSeconds(3600).toString()))
+                .andExpect(status().isUnauthorized());
     }
 
     @Test
@@ -78,12 +84,23 @@ class SvoDutyShiftControllerAuthorizationTests {
 
         when(svoDutyShiftService.list(any(), any(), any(), any())).thenReturn(List.of(shift));
         when(svoDutyShiftService.getCurrentShifts(any())).thenReturn(List.of(shift));
+        when(svoDutyShiftService.findCoverageGaps(any(), any())).thenReturn(
+                new SvoCoverageReportResponse(start, end, true, 0, 0, 0.0, List.of())
+        );
 
         // ATENDENTE_SVO with SVO_SHIFTS_READ can view current shifts
         mockMvc.perform(get("/api/v1/svo/shifts/current")
                         .with(user("atendente").authorities(() -> "SVO_SHIFTS_READ")))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].teamName").value("Equipe Gama"));
+
+        // GESTOR with SVO_SHIFTS_READ can query coverage gaps
+        mockMvc.perform(get("/api/v1/svo/shifts/coverage-gaps")
+                        .param("from", start.toString())
+                        .param("to", end.toString())
+                        .with(user("gestor").authorities(() -> "SVO_SHIFTS_READ")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.fullyCovered").value(true));
 
         // ATENDENTE without SVO_SHIFTS_WRITE cannot cancel shift
         mockMvc.perform(patch("/api/v1/svo/shifts/" + shiftId + "/cancel")
